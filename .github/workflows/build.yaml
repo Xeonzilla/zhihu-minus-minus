@@ -36,22 +36,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm # 🌟 缓存改为 npm
+          cache: npm 
 
       - name: 🏗 Setup EAS
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ env.EXPO_TOKEN }}
-          packager: npm # 🌟 EAS 包管理器改为 npm
+          packager: npm 
 
       - name: 📦 Install dependencies
-        run: npm install # 🌟 依赖安装命令改为 npm install
+        run: npm install 
 
       - name: ⚙️ Prepare Variables
         id: prepare-vars
         run: |
-          APP_VERSION=$(node -p "require('./apps/mobile/package.json').version")
+          # 🌟 改为直接读取根目录的 package.json
+          APP_VERSION=$(node -p "require('./package.json').version")
           VERSION_CODE=$(git rev-list --count HEAD)
 
           # e.g. zhihu-minus-minus-v1.0.0-prod-arm64-v8a
@@ -72,11 +73,13 @@ jobs:
           FIREBASE_ANDROID_JSON_B64: ${{ secrets.FIREBASE_ANDROID_JSON_B64 }}
         if: ${{ env.FIREBASE_ANDROID_JSON_B64 != '' }}
         run: |
-          mkdir -p apps/mobile/assets/config/google-services
-          echo "$FIREBASE_ANDROID_JSON_B64" | base64 -d > apps/mobile/assets/config/google-services/google-services.real.json
+          # 🌟 同样去掉了 apps/mobile 前缀
+          mkdir -p assets/config/google-services
+          echo "$FIREBASE_ANDROID_JSON_B64" | base64 -d > assets/config/google-services/google-services.real.json
 
       - name: 🚀 Build APK
-        run: cd apps/mobile && eas build --platform android --profile ${{ env.EAS_PROFILE }} --local --no-wait --output="$APK_TEMP_PATH"
+        # 🌟 直接在当前目录执行 eas build
+        run: eas build --platform android --profile ${{ env.EAS_PROFILE }} --local --no-wait --output="$APK_TEMP_PATH"
 
       - name: 🚀 Upload Artifact
         uses: actions/upload-artifact@v4
@@ -102,7 +105,8 @@ jobs:
 
       - name: ⚙️ Prepare Release Variables
         run: |
-          APP_VERSION=$(node -p "require('./apps/mobile/package.json').version")
+          # 🌟 这里也改为了根目录
+          APP_VERSION=$(node -p "require('./package.json').version")
           RELEASE_TAG="v${APP_VERSION}"
           echo "RELEASE_TAG=${RELEASE_TAG}" >> $GITHUB_ENV
           ls -R dist/
