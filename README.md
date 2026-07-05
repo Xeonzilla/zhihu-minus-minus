@@ -1,8 +1,8 @@
-# 🐱 知乎 -- (Zhihu Minus Minus)
+# 🐱 知乎-- (Zhihu Minus Minus)
 
 > [!IMPORTANT]
-> **🚧 项目声明**：本项目**依然没有很完善**，差不多可以用了，但部分功能可能不完整且存在不稳定的 API。  
-欢迎 pr，也可以去看看它们 <https://github.com/zhihulite/Hydrogen> 和 <https://github.com/zly2006/zhihu-plus-plus>
+> **🚧 项目声明**：本项目目前核心功能基本稳定，但仍有许多不完善，且知乎 API 也可能发生变动导致功能失效。  
+> 欢迎 PR Issue 或者 fork 去改。  也可以去看看其他软件：<https://github.com/zhihulite/Hydrogen> 和 <https://github.com/zly2006/zhihu-plus-plus>
 
 ![zhihu--](./assets/images/favicon.svg)
 
@@ -10,19 +10,19 @@
 
 ## ✨ 特性
 
-- **纯净**: 只有你想看的内容，没有广告，没有臃肿的功能。
-- **沉浸式阅读**: 适配系统亮色与暗色模式。
-- **功能**:
-  - **日报**: 知乎日报。
-  - **滑动**: 首页子频道、发布中心、个人中心通过一个统一的水平滑动轴无缝切换。
-  - **首页**: 热榜、推荐、关注动态（支持实时联动的顶部 Tab）。
-  - **搜索**: 全站与个人主页的知乎搜索，支持联想词、综合搜索、用户搜索及关键词高亮。
-  - **详情**: 优雅的问题展示、回答/文章详情、评论交互（支持二级回复）。
-    - 目前 关注/推荐 tab 点击问题文字会进入问题详情（长列表里直接可以直接查看，展开所有回答），点击回答内容会进入回答详情（左右滑动查看）。
-    - 具体内容功能：段落交互、数学公式、知乎站内链接卡片...  
-  - **个人**: 我的主页、个人点赞/收藏、浏览历史记录、粉丝/关注列表。
-- **Zhihu Deep Linking**: 完整支持 zhihu.com 外部链接唤起，智能归一化路径。
-- **一键更新**: 支持从 GitHub Releases 自动检测并下载安装新版本 (v0.0.12 后才可以) 
+- **纯净与轻量**: 只有你想看的内容，没有广告，没有臃肿的功能。
+- **沉浸式体验**: 适配系统亮色与暗色模式，支持**全局主题色自定义**，支持感应设备自动旋转。
+- **多账号与游客**: 支持**多账号无缝切换**，并提供基础阅读的**游客模式**（免登录浏览 Feed 流）。
+- **完善的功能**:
+  - **首页**: 热榜、推荐、关注动态。顶部 Tab 实时联动，底部 Tab 支持点击刷新。
+  - **滑动浏览**: 首页子频道、发布中心、个人中心通过统一的水平滑动轴无缝切换；问题详情页支持**左右滑动快速切换回答**。
+  - **搜索**: 全站与个人主页深度搜索，支持联想词、综合搜索、用户搜索及关键词高亮。
+  - **内容渲染**: 优雅的原生排版，深度解析并支持知乎的各种内容形式，以及段落互动。
+  - **互动交流**: 完善的评论区交互（支持查看图片、二级回复），支持文章 (Articles)、想法与话题 (Topics) 的展示与评论。
+  - **个人中心**: 个人主页展示。支持**多收藏夹管理**、**浏览历史记录云端同步**（可选开启/多选删除/一键清空）、全面的关注列表（用户/专栏/话题/收藏夹）。
+- **深度链接 (Deep Linking)**: 完整支持 `zhihu.com` 外部链接及 `zhihu://` 协议唤起应用，知乎内部链接智能归一化跳转。
+- **个性化交互设置**: 自由定制列表点击反馈（安卓水波纹 / 透明度+缩放模式），自定义动画数值。
+- **一键更新**: 支持从 GitHub Releases 自动检测并下载安装新版本。
 - **现代化架构**: 全面拥抱 Expo Router、TanStack Query V5、Tailwind CSS (NativeWind) 和 Zustand。
 
 ## 📸 界面预览
@@ -36,9 +36,9 @@
         <b>搜索</b><br />
       </td>
       <td align="center" valign="top">
-        <img src="./screenshot/v0.0.2/photo_5_2026-03-09_01-45-47.jpg" width="160" style="border-radius: 16px; border: 1px solid #eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />
+        <img src="./screenshot/v0.1.3/Screenshot_20260705_190342.jpg" width="160" style="border-radius: 16px; border: 1px solid #eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />
         <br /><br />
-        <b>问题</b><br />
+        <b>问题详情</b><br />
       </td>
       <td align="center" valign="top">
         <img src="./screenshot/v0.0.4/photo_2026-03-12_23-33-16.jpg" width="160" style="border-radius: 16px; border: 1px solid #eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />
@@ -46,9 +46,9 @@
         <b>夜间模式</b><br />
       </td>
       <td align="center" valign="top">
-        <img src="./screenshot/v0.0.2/photo_3_2026-03-09_01-45-47.jpg" width="160" style="border-radius: 16px; border: 1px solid #eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />
+        <img src="./screenshot/v0.1.3/Screenshot_20260705_190004.jpg" width="160" style="border-radius: 16px; border: 1px solid #eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />
         <br /><br />
-        <b>消息</b><br />
+        <b>关注更新</b><br />
       </td>
       <td align="center" valign="top">
         <img src="./screenshot/v0.0.4/photo_2026-03-12_23-31-25.jpg" width="160" style="border-radius: 16px; border: 1px solid #eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />
@@ -64,7 +64,7 @@
 ### 🤖 Android
 你可以直接前往 [GitHub Releases](https://github.com/huamurui/zhihu-minus-minus/releases) 下载最新的 APK 文件进行安装。
 > [!NOTE]
-> 注意 apk 名称，目前提供的 20mb 左右的 APK 只能在 `arm64` 的安卓设备上运行（只要不是太老的设备都可以）。
+> 注意 apk 名称，目前提供的 20mb 左右的 APK 只能在 `arm64` 的安卓设备上运行（只要不是太老的古董设备都可以）。  
 
 或者
 
@@ -162,4 +162,4 @@ npm run ios
 
 ---
 **Author**: [huamurui](https://github.com/huamurui) & [Antigravity Agent] 🐱
-**Version**: v0.1.3 | **Last Updated**: 2026-07-02
+**Version**: v0.1.3 | **Last Updated**: 2026-07-05
