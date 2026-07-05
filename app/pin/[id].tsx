@@ -177,7 +177,7 @@ export default function PinDetailScreen() {
         {/* 想法内容 */}
         <View className="px-5 bg-transparent">
           <ZhihuContent
-            content={pin?.content_html || ''}
+            contentArray={pin?.content}
             objectId={id as string}
             type="pin"
             onRefresh={refetch}

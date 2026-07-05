@@ -10,6 +10,7 @@ import { useCollectionAction } from '@/hooks/useCollectionAction';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useCollectionStore } from '@/store/useCollectionStore';
 import { BouncyButton } from './BouncyButton';
+import { FeedExcerpt } from './FeedExcerpt';
 import { LikeButton } from './LikeButton';
 import { type ShareContentType, ShareMenu } from './ShareMenu';
 import { Text, useThemeColor, View } from './Themed';
@@ -21,6 +22,7 @@ export const FeedCard = ({ item, tab }: { item: FeedItem; tab?: string }) => {
   const { cookies } = useAuthStore();
   const [menuVisible, setMenuVisible] = useState(false);
   const isQuestionType = item.type === 'questions';
+  const isPinType = item.type === 'pins';
   const isGuest = !cookies;
   const colorScheme = useColorScheme();
 
@@ -173,14 +175,20 @@ export const FeedCard = ({ item, tab }: { item: FeedItem; tab?: string }) => {
       {/* 摘要与图片 - 统一为主卡片点击，完美穿透 */}
       <View className="flex-row mt-1 bg-transparent">
         <View className="flex-1 bg-transparent">
-          <Text
-            type="secondary"
-            className="text-[17px]"
-            style={{ lineHeight: 27 }}
-            numberOfLines={3}
-          >
-            {item.excerpt}
-          </Text>
+          {isQuestionType && item.excerpt ? (
+            <FeedExcerpt html={item.excerpt} />
+          ) : isPinType && Array.isArray(item.content) ? (
+            <FeedExcerpt contentArray={item.content as any[]} />
+          ) : (
+            <Text
+              type="secondary"
+              className="text-[17px]"
+              style={{ lineHeight: 27 }}
+              numberOfLines={3}
+            >
+              {item.excerpt}
+            </Text>
+          )}
         </View>
         {item.image && (
           <Animated.Image

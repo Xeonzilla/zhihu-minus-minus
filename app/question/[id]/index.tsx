@@ -594,6 +594,7 @@ export default function QuestionDetail() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<any>(null);
+  const [detailExpanded, setDetailExpanded] = useState(false);
 
   const itemRefs = useRef(new Map<string, any>());
   const {
@@ -870,11 +871,51 @@ export default function QuestionDetail() {
                 ))}
               </View>
             )}
-            {question?.excerpt && (
+            {question?.detail ? (
+              <View className="mt-2.5 bg-transparent">
+                {detailExpanded ? (
+                  <View className="bg-transparent">
+                    <ZhihuContent
+                      content={question.detail}
+                      objectId={id as string}
+                      type="question"
+                    />
+                    <Pressable
+                      onPress={() => setDetailExpanded(false)}
+                      className="flex-row items-center justify-center py-1 mt-1"
+                    >
+                      <Text
+                        style={{ color: primaryColor }}
+                        className="text-[13px] font-bold mr-1"
+                      >
+                        收起
+                      </Text>
+                      <Ionicons
+                        name="chevron-up"
+                        size={14}
+                        color={primaryColor}
+                      />
+                    </Pressable>
+                  </View>
+                ) : (
+                  <Pressable onPress={() => setDetailExpanded(true)}>
+                    <Text type="secondary" className="text-sm leading-5">
+                      {question.excerpt?.replace(/<[^>]+>/g, '') || ''}
+                    </Text>
+                    <Text
+                      style={{ color: primaryColor }}
+                      className="text-[13px] font-bold mt-1"
+                    >
+                      展开全文
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            ) : question?.excerpt ? (
               <Text type="secondary" className="mt-2.5 text-sm leading-5">
                 {question.excerpt.replace(/<[^>]+>/g, '')}
               </Text>
-            )}
+            ) : null}
             <View className="mt-3 bg-transparent">
               <Text type="secondary" className="text-[13px]">
                 {question?.follower_count || 0} 关注 ·{' '}
@@ -995,6 +1036,7 @@ export default function QuestionDetail() {
       sortBy,
       followMutation.isPending,
       colorScheme,
+      detailExpanded,
     ],
   );
 
