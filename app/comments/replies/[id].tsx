@@ -8,16 +8,17 @@ import {
 } from '@tanstack/react-query';
 import { BlurView } from 'expo-blur';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Animated,
   Image,
-  KeyboardAvoidingView,
+  Keyboard,
   Platform,
-  Pressable,
   StyleSheet,
   TextInput,
+  useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -26,12 +27,15 @@ import {
   getChildCommentsV5 as getChildComments,
   getComment,
 } from '@/api/zhihu';
+import { BouncyButton } from '@/components/BouncyButton';
 import { CommentContent } from '@/components/CommentContent';
 import { LikeButton } from '@/components/LikeButton';
 import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { formatDate } from '@/utils/date';
+import { copyToClipboard } from '@/utils/clipboard';
+import { showToast } from '@/utils/toast';
 
 export default function ReplyDetailScreen() {
   const { id, parent } = useLocalSearchParams<{
@@ -50,6 +54,41 @@ export default function ReplyDetailScreen() {
   const borderColor = Colors[colorScheme].border;
   const textColor = Colors[colorScheme].text;
   const tintColor = useThemeColor({}, 'primary');
+  const { width: screenWidth } = useWindowDimensions();
+  // 减去头像(32) + 间距(12) + 左右padding(30)
+  const contentWidth = screenWidth - 32 - 12 - 30;
+  const insets = _insets;
+
+  // 键盘高度动画：解决键盘收起后输入框无法回到底部的 bug
+  const keyboardHeight = React.useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const show = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (e) => {
+        Animated.timing(keyboardHeight, {
+          toValue: e.endCoordinates.height,
+          duration: Platform.OS === 'ios' ? e.duration || 250 : 200,
+          useNativeDriver: false,
+        }).start();
+      },
+    );
+    const hide = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      (e) => {
+        Animated.timing(keyboardHeight, {
+          toValue: 0,
+          duration: Platform.OS === 'ios' ? e.duration || 250 : 200,
+          useNativeDriver: false,
+        }).start();
+      },
+    );
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, [keyboardHeight]);
+
+  const INPUT_BAR_HEIGHT = 60;
 
   const initialParentComment = useMemo<CommentItem | null>(() => {
     if (!parent) return null;
@@ -120,28 +159,49 @@ export default function ReplyDetailScreen() {
     if (urlToken) router.push(`/user/${urlToken}`);
   };
 
+  // 提取 HTML 评论的纯文本（用于长按复制）
+  const extractPlainText = (html: string) => {
+    const imageRegex =
+      /<a[^>]+class="comment_img"[^>]*href="([^"]+)"[^>]*>.*?<\/a>|<a[^>]+href="([^"]+)"[^>]*class="comment_img"[^>]*>.*?<\/a>/gi;
+    return html
+      .replace(imageRegex, '[\u56fe\u7247]')
+      .replace(/<[^>]+>/g, '')
+      .trim();
+  };
+
+  const handleLongPressComment = async (html: string, authorName: string) => {
+    const text = extractPlainText(html);
+    if (!text) return;
+    const ok = await copyToClipboard(text);
+    if (ok) showToast(`已复制 @${authorName} 的评论`);
+  };
+
   const renderReply = ({ item }: { item: CommentItem }) => {
     return (
-      <View
-        type="secondary"
-        className="flex-row p-[15px] bg-transparent"
+      <BouncyButton
+        onLongPress={() => handleLongPressComment(item.content, item.author.member.name)}
+        delayLongPress={400}
         style={{
           borderBottomWidth: StyleSheet.hairlineWidth,
           borderBottomColor: borderColor,
         }}
       >
-        <Pressable
+        <View
+          className="flex-row p-[15px] bg-transparent"
+        >
+        <BouncyButton
           onPress={() =>
             goToProfile(item.author.member.url_token || item.author.member.id)
           }
+          style={{ borderRadius: 16 }}
         >
           <Image
             source={{ uri: item.author.member.avatar_url }}
             className="w-8 h-8 rounded-full"
           />
-        </Pressable>
+        </BouncyButton>
         <View type="secondary" className="flex-1 ml-3 bg-transparent">
-          <Text className="font-bold text-[13px] mb-1">
+          <Text className="font-semibold text-[13px] mb-1">
             <Text
               onPress={() =>
                 goToProfile(
@@ -160,8 +220,8 @@ export default function ReplyDetailScreen() {
                   onPress={() =>
                     goToProfile(
                       item.reply_to_author?.member.url_token ||
-                        item.reply_to_author?.member.id ||
-                        0,
+                      item.reply_to_author?.member.id ||
+                      0,
                     )
                   }
                 >
@@ -171,12 +231,23 @@ export default function ReplyDetailScreen() {
             )}
           </Text>
           <View className="mt-1 bg-transparent">
-            <CommentContent htmlContent={item.content} width={300} />
+            <CommentContent htmlContent={item.content} width={contentWidth} />
           </View>
 
-          <View className="flex-row justify-between items-center mt-2 bg-transparent">
-            <Text type="secondary" className="text-xs">
-              {item.created_time ? formatDate(item.created_time) : ''}
+          <View className="flex-row justify-between items-center bg-transparent">
+            <Text
+              style={{
+                fontSize: 12,
+                color: Colors[colorScheme].textSecondary,
+                opacity: 0.65,
+              }}
+            >
+              {[
+                item.created_time ? formatDate(item.created_time) : null,
+                item.address_text ? item.address_text : null,
+              ]
+                .filter(Boolean)
+                .join('  ·  ')}
             </Text>
             <View className="flex-row items-center bg-transparent">
               <LikeButton
@@ -186,7 +257,7 @@ export default function ReplyDetailScreen() {
                 type="comments"
                 variant="ghost"
               />
-              <Pressable
+              <BouncyButton
                 onPress={() => {
                   setReplyTo({
                     id: item.id as string,
@@ -194,16 +265,17 @@ export default function ReplyDetailScreen() {
                   });
                   inputRef.current?.focus();
                 }}
-                className="ml-[15px]"
+                style={{ marginLeft: 15, borderRadius: 4 }}
               >
-                <Text type="secondary" className="text-xs py-1">
+                <Text type="secondary" className="text-xs font-medium py-1">
                   回复
                 </Text>
-              </Pressable>
+              </BouncyButton>
             </View>
           </View>
         </View>
-      </View>
+        </View>
+      </BouncyButton>
     );
   };
 
@@ -217,42 +289,54 @@ export default function ReplyDetailScreen() {
         }}
       >
         <View className="flex-row p-[15px] bg-transparent">
-          <Pressable
+          <BouncyButton
             onPress={() =>
               goToProfile(
                 parentComment.author.member.url_token ||
-                  parentComment.author.member.id,
+                parentComment.author.member.id,
               )
             }
+            style={{ borderRadius: 18 }}
           >
             <Image
               source={{ uri: parentComment.author.member.avatar_url }}
-              className="w-9 h-9 rounded-full"
+              className="w-8 h-8 rounded-full"
             />
-          </Pressable>
+          </BouncyButton>
           <View className="flex-1 ml-3 bg-transparent">
             <View className="flex-row items-center mb-1">
               <Text
-                className="font-bold text-sm mr-2"
+                className="font-semibold text-sm mr-2"
                 onPress={() =>
                   goToProfile(
                     parentComment.author.member.url_token ||
-                      parentComment.author.member.id,
+                    parentComment.author.member.id,
                   )
                 }
               >
                 {parentComment.author.member.name}
               </Text>
             </View>
-            <View className="mt-1 mb-2 bg-transparent">
-              <CommentContent htmlContent={parentComment.content} width={300} />
+            <View className="mt-1 bg-transparent">
+              <CommentContent htmlContent={parentComment.content} width={contentWidth} />
             </View>
 
-            <View className="flex-row justify-between items-center mt-1 bg-transparent">
-              <Text type="secondary" className="text-xs">
-                {parentComment.created_time
-                  ? formatDate(parentComment.created_time)
-                  : ''}
+            <View className="flex-row justify-between items-center bg-transparent">
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: Colors[colorScheme].textSecondary,
+                  opacity: 0.65,
+                }}
+              >
+                {[
+                  parentComment.created_time
+                    ? formatDate(parentComment.created_time)
+                    : null,
+                  parentComment.address_text ? parentComment.address_text : null,
+                ]
+                  .filter(Boolean)
+                  .join('  ·  ')}
               </Text>
               <View className="flex-row items-center">
                 <LikeButton
@@ -262,7 +346,7 @@ export default function ReplyDetailScreen() {
                   type="comments"
                   variant="ghost"
                 />
-                <Pressable
+                <BouncyButton
                   onPress={() => {
                     setReplyTo({
                       id: parentComment.id as string,
@@ -270,12 +354,12 @@ export default function ReplyDetailScreen() {
                     });
                     inputRef.current?.focus();
                   }}
-                  className="ml-[15px]"
+                  style={{ marginLeft: 15, borderRadius: 4 }}
                 >
-                  <Text type="secondary" className="text-xs py-1">
+                  <Text type="secondary" className="text-xs font-medium py-1">
                     回复
                   </Text>
-                </Pressable>
+                </BouncyButton>
               </View>
             </View>
           </View>
@@ -287,7 +371,7 @@ export default function ReplyDetailScreen() {
             borderTopColor: borderColor,
           }}
         >
-          <Text className="text-xs font-bold" style={{ color: tintColor }}>
+          <Text className="text-xs font-semibold" style={{ color: tintColor }}>
             共 {totalCount} 条回复
           </Text>
         </View>
@@ -305,7 +389,9 @@ export default function ReplyDetailScreen() {
           keyExtractor={(item: CommentItem) => item.id.toString()}
           ListHeaderComponent={renderHeader}
           {...({ estimatedItemSize: 100 } as any)}
-          contentContainerStyle={{ paddingBottom: 160 }}
+          contentContainerStyle={{
+            paddingBottom: INPUT_BAR_HEIGHT + insets.bottom + 20,
+          }}
           onRefresh={refetch}
           refreshing={isFetching && !isLoading}
           onEndReached={() =>
@@ -334,82 +420,86 @@ export default function ReplyDetailScreen() {
         />
       </View>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-        style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }}
-        keyboardVerticalOffset={90}
+      {/* 输入框：绝对定位 + 随键盘动画移动 */}
+      <Animated.View
+        style={[
+          {
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: keyboardHeight,
+            paddingHorizontal: 15,
+            paddingBottom: insets.bottom > 0 ? insets.bottom : 12,
+            paddingTop: 8,
+          },
+        ]}
         pointerEvents="box-none"
       >
-        <View
-          className="flex-1 justify-end px-[15px] pb-5"
-          pointerEvents="box-none"
+        <BlurView
+          intensity={100}
+          tint={colorScheme === 'dark' ? 'dark' : 'light'}
+          style={{
+            borderRadius: 30,
+            overflow: 'hidden',
+            borderWidth: StyleSheet.hairlineWidth,
+            borderColor,
+            paddingHorizontal: 5,
+            backgroundColor:
+              colorScheme === 'dark'
+                ? 'rgba(26,26,26,0.85)'
+                : 'rgba(255,255,255,0.9)',
+          }}
         >
-          <BlurView
-            intensity={100}
-            tint={colorScheme === 'dark' ? 'dark' : 'light'}
-            style={{
-              borderRadius: 30,
-              overflow: 'hidden',
-              borderWidth: StyleSheet.hairlineWidth,
-              borderColor,
-              paddingHorizontal: 5,
-              backgroundColor:
-                colorScheme === 'dark'
-                  ? 'rgba(26,26,26,0.85)'
-                  : 'rgba(255,255,255,0.9)',
-            }}
-          >
-            {replyTo && (
-              <View className="flex-row justify-between items-center px-[15px] pt-2.5 pb-0.5">
-                <Text type="secondary" className="text-xs">
-                  正在回复 {replyTo.name}
-                </Text>
-                <Pressable onPress={() => setReplyTo(null)}>
-                  <Ionicons
-                    name="close-circle"
-                    size={16}
-                    color={Colors[colorScheme].textSecondary}
-                  />
-                </Pressable>
-              </View>
-            )}
-            <View className="flex-row items-end px-1 py-1">
-              <TextInput
-                ref={inputRef}
-                className="flex-1 min-h-[35px] max-h-[100px] px-3 pt-2.5 pb-2.5"
-                style={{ color: textColor }}
-                placeholder={
-                  replyTo ? `回复 ${replyTo.name}...` : '说点什么吧...'
-                }
-                placeholderTextColor="#999"
-                value={inputText}
-                onChangeText={setInputText}
-                multiline
-                maxLength={1000}
-              />
-              <Pressable
-                disabled={!inputText.trim() || mutation.isPending}
-                onPress={() => mutation.mutate(inputText.trim())}
-                className="h-10 justify-center px-[15px]"
-              >
-                {mutation.isPending ? (
-                  <ActivityIndicator size="small" color={tintColor} />
-                ) : (
-                  <Text
-                    className="font-bold text-base"
-                    style={{
-                      color: tintColor,
-                      opacity: inputText.trim() ? 1 : 0.5,
-                    }}
-                  >
-                    发布
-                  </Text>
-                )}
-              </Pressable>
+          {replyTo && (
+            <View className="flex-row justify-between items-center px-[15px] pt-2.5 pb-0.5">
+              <Text type="secondary" className="text-xs">
+                正在回复 {replyTo.name}
+              </Text>
+              <BouncyButton onPress={() => setReplyTo(null)} style={{ borderRadius: 8 }}>
+                <Ionicons
+                  name="close-circle"
+                  size={16}
+                  color={Colors[colorScheme].textSecondary}
+                />
+              </BouncyButton>
             </View>
-          </BlurView>
-        </View>
-      </KeyboardAvoidingView>
+          )}
+          <View className="flex-row items-end px-1 py-1">
+            <TextInput
+              ref={inputRef}
+              className="flex-1 min-h-[35px] max-h-[100px] px-3 pt-2.5 pb-2.5"
+              style={{ color: textColor, fontSize: 15 }}
+              placeholder={
+                replyTo ? `回复 ${replyTo.name}...` : '说点什么吧...'
+              }
+              placeholderTextColor="#999"
+              value={inputText}
+              onChangeText={setInputText}
+              multiline
+              maxLength={1000}
+            />
+            <BouncyButton
+              disabled={!inputText.trim() || mutation.isPending}
+              onPress={() => mutation.mutate(inputText.trim())}
+              style={{ height: 40, justifyContent: 'center', paddingHorizontal: 15, borderRadius: 20 }}
+            >
+              {mutation.isPending ? (
+                <ActivityIndicator size="small" color={tintColor} />
+              ) : (
+                <Text
+                  className="font-semibold text-base"
+                  style={{
+                    color: tintColor,
+                    opacity: inputText.trim() ? 1 : 0.5,
+                  }}
+                >
+                  发布
+                </Text>
+              )}
+            </BouncyButton>
+          </View>
+        </BlurView>
+      </Animated.View>
     </View>
   );
 }
