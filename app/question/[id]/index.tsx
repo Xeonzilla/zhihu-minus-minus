@@ -639,7 +639,7 @@ export default function QuestionDetail() {
     queryKey: ['question-answers', id, sortBy],
     queryFn: async ({ pageParam = 0 }) => {
       const include =
-        'data[*].content,voteup_count,comment_count,favlists_count,author.name,author.avatar_url,author.headline,author.is_following,relationship.voting,relationship.is_author,created_time,updated_time,ip_info,segment_infos';
+        'data[*].content,excerpt,voteup_count,comment_count,favlists_count,author.name,author.avatar_url,author.headline,author.is_following,relationship.voting,relationship.is_author,created_time,updated_time,ip_info,segment_infos';
       const res = await client.get(
         `/questions/${id}/answers?include=${include}&limit=20&offset=${pageParam}&sort_by=${sortBy}`,
       );
@@ -1054,12 +1054,12 @@ export default function QuestionDetail() {
         data={
           selectedAnswer
             ? {
-                id: selectedAnswer.id,
-                title: question?.title,
-                author: selectedAnswer.author?.name,
-                authorHeadline: selectedAnswer.author?.headline,
-                url: getShareLink(selectedAnswer),
-              }
+              id: selectedAnswer.id,
+              title: question?.title,
+              author: selectedAnswer.author?.name,
+              authorHeadline: selectedAnswer.author?.headline,
+              url: getShareLink(selectedAnswer),
+            }
             : null
         }
       />

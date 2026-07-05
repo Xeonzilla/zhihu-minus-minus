@@ -45,21 +45,25 @@ function parsePinContent(contentArray: PinContentItem[]): {
   return { text: textBlocks.join(' ').trim(), links };
 }
 
+function isString(v: any): v is string {
+  return typeof v === 'string';
+}
+
 export const FeedExcerpt: React.FC<{
-  html?: string;
+  html?: string | React.ReactNode;
   contentArray?: PinContentItem[];
 }> = React.memo(({ html, contentArray }) => {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const surfaceColor = Colors[colorScheme].backgroundSecondary;
 
-  const { text, links } = useMemo(() => {
+  const parsed = useMemo(() => {
     if (contentArray) {
       const result = parsePinContent(contentArray);
-      return { text: result.text, links: result.links.map((l) => l.url || '') };
+      return { text: result.text as React.ReactNode, links: result.links.map((l) => l.url || '') };
     }
-    if (html) return parseExcerpt(html);
-    return { text: '', links: [] };
+    if (html && isString(html)) return { text: parseExcerpt(html).text, links: parseExcerpt(html).links };
+    return { text: html || null, links: [] as string[] };
   }, [html, contentArray]);
 
   const handleLinkPress = useCallback(
@@ -75,19 +79,32 @@ export const FeedExcerpt: React.FC<{
     [router],
   );
 
+  if (!parsed.text && parsed.links.length === 0) return null;
+
   return (
     <View className="bg-transparent">
-      {text ? (
-        <Text
-          type="secondary"
-          className="text-[17px]"
-          style={{ lineHeight: 27 }}
-          numberOfLines={3}
-        >
-          {text}
-        </Text>
+      {parsed.text ? (
+        isString(parsed.text) ? (
+          <Text
+            type="secondary"
+            className="text-[17px]"
+            style={{ lineHeight: 27 }}
+            numberOfLines={3}
+          >
+            {parsed.text}
+          </Text>
+        ) : (
+          <Text
+            type="secondary"
+            className="text-[17px]"
+            style={{ lineHeight: 27 }}
+            numberOfLines={3}
+          >
+            {parsed.text}
+          </Text>
+        )
       ) : null}
-      {links.map((link, i) => (
+      {parsed.links.map((link, i) => (
         <LinkCard
           key={i}
           url={link}
