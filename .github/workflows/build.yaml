@@ -1,23 +1,23 @@
 name: Build and Release
 
 on:
-  workflow_dispatch: # 手动点击触发，其他选项
+  workflow_dispatch: # 纯粹的手动点击触发，无需任何选项
 
 env:
   NODE_VERSION: 22.x
   EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  # 由于只有 main 分支直接发包，环境统一配死在这里
+  # 统一的环境配置
   BUILD_TYPE: prod
   EAS_PROFILE: prod-ci
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # 使用 GitHub 官方免费服务器
     strategy:
       fail-fast: false
       matrix:
-        # 直接写死需要打包的架构。如果你觉得 4 个架构打包太慢，可以随时在这里删减（比如只留 arm64-v8a）
+        # 直接写死需要打包的架构
         arch: [arm64-v8a]
     permissions:
       contents: write
@@ -30,27 +30,23 @@ jobs:
       - name: 🏗 Setup repo
         uses: actions/checkout@v5
         with:
-          # 默认拉取触发该 workflow 的分支 (即 main)
           fetch-depth: 0 # 获取完整历史记录以计算版本号(commit 数量)
 
-      - name: 🤖 Setup PNPM
-        uses: pnpm/action-setup@v4
-
       - name: 🏗 Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
+          cache: npm # 🌟 缓存改为 npm
 
       - name: 🏗 Setup EAS
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ env.EXPO_TOKEN }}
-          packager: pnpm
+          packager: npm # 🌟 EAS 包管理器改为 npm
 
       - name: 📦 Install dependencies
-        run: pnpm install
+        run: npm install # 🌟 依赖安装命令改为 npm install
 
       - name: ⚙️ Prepare Variables
         id: prepare-vars
@@ -83,7 +79,7 @@ jobs:
         run: cd apps/mobile && eas build --platform android --profile ${{ env.EAS_PROFILE }} --local --no-wait --output="$APK_TEMP_PATH"
 
       - name: 🚀 Upload Artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.prepare-vars.outputs.apkName }}
           path: ${{ steps.prepare-vars.outputs.artifactDir }}
