@@ -123,6 +123,8 @@ const AnswerItem = forwardRef(
     const warningColor = useThemeColor({}, 'warning');
 
     const [measuredHeight, setMeasuredHeight] = useState(0);
+    // isMounted: ZhihuContent is only mounted after first expansion (perf optimization for long content)
+    const [isMounted, setIsMounted] = useState(isExpanded);
     const expandedProgress = useSharedValue(isExpanded ? 1 : 0);
     const borderProgress = useSharedValue(0);
     const isFirstMount = useRef(true);
@@ -138,6 +140,10 @@ const AnswerItem = forwardRef(
       expandedProgress.value = withTiming(isExpanded ? 1 : 0, {
         duration: 300,
       });
+
+      if (isExpanded && !isMounted) {
+        setIsMounted(true);
+      }
 
       if (isFirstMount.current) {
         isFirstMount.current = false;
@@ -229,6 +235,37 @@ const AnswerItem = forwardRef(
       item.content?.includes('<img') ||
       item.content?.includes('<figure');
     const excerpt = isLongContent ? rawText.substring(0, 100) + '...' : rawText;
+
+    const { fontSizeScale, lineHeightScale } = useSettingsStore();
+
+    // Shared meta info component to avoid repetition
+    const metaText = [
+      item.created_time ? `发布于 ${formatDate(item.created_time)}` : null,
+      item.updated_time ? `编辑于 ${formatDate(item.updated_time)}` : null,
+      item.ip_info ? item.ip_info : null,
+    ]
+      .filter(Boolean)
+      .join('  ·  ');
+
+    const MetaInfo = metaText ? (
+      <View
+        style={{
+          marginTop: 12,
+          paddingTop: 10,
+        }}
+        className="bg-transparent"
+      >
+        <Text
+          style={{
+            fontSize: 12,
+            color: Colors[colorScheme].textSecondary,
+            opacity: 0.7,
+          }}
+        >
+          {metaText}
+        </Text>
+      </View>
+    ) : null;
 
     const followMutation = useOptimisticToggle({
       mutationFn: async () => {
@@ -342,6 +379,7 @@ const AnswerItem = forwardRef(
 
         <View className="mt-1 bg-transparent">
           {!isLongContent ? (
+            // Short content: render directly
             <View className="flex-1 bg-transparent">
               <ZhihuContent
                 objectId={item.id}
@@ -350,14 +388,71 @@ const AnswerItem = forwardRef(
                 segmentInfos={item.segment_infos}
                 useNative={true}
               />
+              {MetaInfo}
+            </View>
+          ) : !isMounted ? (
+            // Long content, never expanded: plain-text excerpt styled like ZhihuContent <p>
+            <View className="flex-1 bg-transparent">
+              {/* Text + gradient overlay in a relative container */}
+              <View style={{ position: 'relative', height: 150 }}>
+                <View style={{ height: 150, overflow: 'hidden' }}>
+                  <Text
+                    style={{
+                      fontSize: 17 * fontSizeScale,
+                      lineHeight: 17 * lineHeightScale,
+                      color: Colors[colorScheme].text,
+                      marginBottom: 14,
+                    }}
+                  >
+                    {excerpt}
+                  </Text>
+                </View>
+                {/* Gradient fades out the bottom of the text, tap to expand */}
+                <Pressable
+                  onPress={() => onToggle(item.id.toString(), true)}
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: 80,
+                  }}
+                >
+                  <LinearGradient
+                    colors={[
+                      colorScheme === 'dark'
+                        ? 'rgba(30, 30, 34, 0)'
+                        : 'rgba(255, 255, 255, 0)',
+                      colorScheme === 'dark'
+                        ? 'rgba(30, 30, 34, 1)'
+                        : 'rgba(255, 255, 255, 1)',
+                    ]}
+                    style={{
+                      flex: 1,
+                      justifyContent: 'flex-end',
+                      alignItems: 'center',
+                      paddingBottom: 6,
+                    }}
+                  >
+                    <Text
+                      className="text-[13px] font-bold"
+                      style={{ color: primaryColor }}
+                    >
+                      展开全文
+                    </Text>
+                  </LinearGradient>
+                </Pressable>
+              </View>
+              {MetaInfo}
             </View>
           ) : (
+            // Long content, mounted (expanded at least once): full ZhihuContent with animation
             <View
               className="flex-1 bg-transparent"
               style={{ position: 'relative' }}
             >
               <Reanimated.View
-                style={[animatedContentStyle, { overflow: 'hidden' }]}
+                style={[animatedContentStyle, { overflow: 'hidden', alignSelf: 'stretch' }]}
                 className="bg-transparent"
               >
                 <View
@@ -367,6 +462,7 @@ const AnswerItem = forwardRef(
                       setMeasuredHeight(h);
                     }
                   }}
+                  style={{ width: '100%' }}
                   className="bg-transparent"
                 >
                   <ZhihuContent
@@ -375,32 +471,20 @@ const AnswerItem = forwardRef(
                     content={item.content}
                     segmentInfos={item.segment_infos}
                   />
-                  <View className="mt-[20px] bg-transparent">
-                    <Text
-                      type="secondary"
-                      className="text-[#bbb] text-[13px] italic"
-                    >
-                      发布于{' '}
-                      {item.created_time ? formatDate(item.created_time) : ''}{' '}
-                      {item.ip_info ? `· ${item.ip_info} ` : ''}
-                    </Text>
-                    {item.updated_time && (
-                      <Text
-                        type="secondary"
-                        className="text-[#bbb] text-[13px] italic mt-1"
-                      >
-                        最后编辑 {formatDate(item.updated_time)}
-                      </Text>
-                    )}
-                  </View>
+                  {MetaInfo}
                   <Pressable
                     onPress={() =>
                       item?.id && onToggle(item.id.toString(), false)
                     }
-                    className="flex-row items-center justify-center py-1 mt-[4px] bg-transparent"
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      paddingVertical: 10,
+                      marginTop: 4,
+                    }}
                   >
                     <Text
-                      type="primary"
                       className="text-[13px] font-bold mr-1"
                       style={{ color: primaryColor }}
                     >
@@ -453,7 +537,6 @@ const AnswerItem = forwardRef(
                     }}
                   >
                     <Text
-                      type="primary"
                       className="text-[13px] font-bold"
                       style={{ color: primaryColor }}
                     >

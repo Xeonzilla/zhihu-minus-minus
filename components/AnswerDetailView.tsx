@@ -253,7 +253,7 @@ export const AnswerDetailView = ({
               className="bg-transparent"
             >
               <Text
-                className="text-[14px] font-bold text-center"
+                className="text-[17px] font-bold text-center"
                 numberOfLines={1}
               >
                 {answer?.question?.title || '加载中...'}
@@ -297,7 +297,7 @@ export const AnswerDetailView = ({
           paddingBottom: 100 + insets.bottom,
         }}
       >
-        <View className="flex-row items-center p-5 justify-between bg-transparent">
+        <View className="flex-row items-center px-5 pt-5 pb-4 justify-between bg-transparent">
           <Pressable
             onPress={goToProfile}
             className="flex-row items-center flex-1 bg-transparent"
@@ -307,12 +307,12 @@ export const AnswerDetailView = ({
               className="w-11 h-11 rounded-full"
             />
             <View className="ml-3 flex-1 bg-transparent">
-              <Text className="text-base font-bold">
+              <Text className="text-[16px] font-bold" numberOfLines={1}>
                 {answer?.author?.name}
               </Text>
               <Text
                 type="secondary"
-                className="text-[13px] text-[#999] mt-0.5"
+                className="text-[13px] mt-0.5"
                 numberOfLines={1}
               >
                 {answer?.author?.headline}
@@ -354,7 +354,7 @@ export const AnswerDetailView = ({
             </Text>
           </View>
         ) : (
-          <View className="px-5 bg-transparent">
+          <View className="px-5 pb-2 bg-transparent">
             {hasBeenFocused ? (
               <ZhihuContent
                 content={answer?.content || ''}
@@ -371,27 +371,37 @@ export const AnswerDetailView = ({
                 </Text>
               </View>
             )}
-            <Text
-              type="secondary"
-              className="text-[#bbb] text-[13px] mt-[30px] italic"
+            {/* Meta info */}
+            <View
+              style={{
+                marginTop: 20,
+                paddingTop: 12,
+              }}
+              className="bg-transparent"
             >
-              发布于{' '}
-              {answer?.created_time
-                ? formatDate(answer.created_time)
-                : answer?.created_time_name || '不久前'}{' '}
-              {answer?.ip_info ? `· ${answer.ip_info} ` : ''}
-            </Text>
-            {answer?.updated_time && (
               <Text
-                type="secondary"
-                className="text-[#bbb] text-[13px] italic pb-5 mt-1"
+                style={{
+                  fontSize: 12,
+                  color: Colors[colorScheme].textSecondary,
+                  opacity: 0.65,
+                }}
               >
-                最后编辑{' '}
-                {
-                  answer?.updated_time ? formatDate(answer.updated_time) : ''
-                }
+                {[
+                  answer?.created_time
+                    ? `发布于 ${formatDate(answer.created_time)}`
+                    : answer?.created_time_name
+                      ? `发布于 ${answer.created_time_name}`
+                      : null,
+                  answer?.updated_time
+                    ? `编辑于 ${formatDate(answer.updated_time)}`
+                    : null,
+                  answer?.ip_info ? answer.ip_info : null,
+
+                ]
+                  .filter(Boolean)
+                  .join('  ·  ')}
               </Text>
-            )}
+            </View>
           </View>
         )}
       </ScrollView>
