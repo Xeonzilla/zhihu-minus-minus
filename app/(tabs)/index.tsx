@@ -446,13 +446,13 @@ export default function HomeScreen() {
                   backgroundColor: useThemeColor({}, 'primary_26'),
                   width:
                     containerWidth /
-                      ((currentTabs.filter(
-                        (t) => !['publish', 'profile'].includes(t),
-                      ).length > 0
-                        ? 1
-                        : 0) +
-                        (currentTabs.includes('publish') ? 1 : 0) +
-                        (currentTabs.includes('profile') ? 1 : 0)) -
+                    ((currentTabs.filter(
+                      (t) => !['publish', 'profile'].includes(t),
+                    ).length > 0
+                      ? 1
+                      : 0) +
+                      (currentTabs.includes('publish') ? 1 : 0) +
+                      (currentTabs.includes('profile') ? 1 : 0)) -
                     20,
                 },
                 bottomIndicatorStyle,
@@ -464,14 +464,14 @@ export default function HomeScreen() {
                 // 判断逻辑：当前在首页区域且当前子 Tab 有滚动
                 isScrollTop={
                   currentPage <
-                    currentTabs.filter(
-                      (t) => !['publish', 'profile'].includes(t),
-                    ).length && scrolledTabs[currentPage]
+                  currentTabs.filter(
+                    (t) => !['publish', 'profile'].includes(t),
+                  ).length && scrolledTabs[currentPage]
                 }
                 icon={
                   currentPage <
-                  currentTabs.filter((t) => !['publish', 'profile'].includes(t))
-                    .length
+                    currentTabs.filter((t) => !['publish', 'profile'].includes(t))
+                      .length
                     ? 'home'
                     : 'home-outline'
                 }
@@ -483,8 +483,8 @@ export default function HomeScreen() {
                 onPress={handleHomeTabPress}
                 color={
                   currentPage <
-                  currentTabs.filter((t) => !['publish', 'profile'].includes(t))
-                    .length
+                    currentTabs.filter((t) => !['publish', 'profile'].includes(t))
+                      .length
                     ? tintColor
                     : Colors[colorScheme].textSecondary
                 }
