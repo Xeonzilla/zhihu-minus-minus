@@ -13,12 +13,12 @@ env:
 
 jobs:
   build:
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         # 直接写死需要打包的架构。如果你觉得 4 个架构打包太慢，可以随时在这里删减（比如只留 arm64-v8a）
-        arch: [arm64-v8a, armeabi-v7a, x86_64, x86]
+        arch: [arm64-v8a]
     permissions:
       contents: write
       packages: read
