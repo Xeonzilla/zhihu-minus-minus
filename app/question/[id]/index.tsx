@@ -42,6 +42,7 @@ import Reanimated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import client from '@/api/client';
 import { deleteAnswer } from '@/api/zhihu/answer';
+import { addReadHistory } from '@/api/zhihu/history';
 import { followMember, unfollowMember } from '@/api/zhihu/member';
 import {
   followQuestion,
@@ -63,6 +64,7 @@ import { useViewableItems } from '@/hooks/useViewableItems';
 import { useZhihuInfiniteQuery } from '@/hooks/useZhihuInfiniteQuery';
 import { useCollectionStore } from '@/store/useCollectionStore';
 import { useProgressStore } from '@/store/useProgressStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 import { copyToClipboard } from '@/utils/clipboard';
 import { formatDate } from '@/utils/date';
 import { refreshInfiniteQuery } from '@/utils/query';
@@ -664,6 +666,12 @@ export default function QuestionDetail() {
     });
   }, [answersData]);
 
+  const enableBrowseHistory = useSettingsStore(
+    (s) => s.enableBrowseHistory,
+  );
+
+  const recordedAnswerIds = useRef(new Set<string>());
+
   const handleToggleExpand = useCallback(
     (id: string, expanded: boolean) => {
       if (
@@ -681,6 +689,11 @@ export default function QuestionDetail() {
         return next;
       });
 
+      if (expanded && enableBrowseHistory && !recordedAnswerIds.current.has(id)) {
+        recordedAnswerIds.current.add(id);
+        addReadHistory({ content_token: id, content_type: 'answer' });
+      }
+
       if (!expanded) {
         // Collapsing: scroll back to the item to prevent losing context
         // Use setTimeout to ensure the list has updated its layout
@@ -696,7 +709,7 @@ export default function QuestionDetail() {
         }, 100);
       }
     },
-    [answers, insets.top],
+    [answers, insets.top, enableBrowseHistory],
   );
 
   const getShareLink = (answer: any) => {
@@ -809,6 +822,15 @@ export default function QuestionDetail() {
       */
     }
   }, [id, qLoading, question, answers.length, isRestored]);
+
+  React.useEffect(() => {
+    if (enableBrowseHistory && question?.id) {
+      addReadHistory({
+        content_token: String(question.id),
+        content_type: 'question',
+      });
+    }
+  }, [enableBrowseHistory, question?.id]);
 
   const renderHeader = useMemo(
     () => (

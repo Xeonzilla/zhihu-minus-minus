@@ -39,6 +39,7 @@ export default function AppearanceSettings() {
     defaultTab,
     useWebView,
     enablePrivateMessaging,
+    enableBrowseHistory,
     pressOpacity,
     pressScale,
     androidFeedbackType,
@@ -404,6 +405,15 @@ export default function AppearanceSettings() {
               value={enablePrivateMessaging}
               onValueChange={(val) =>
                 updateSettings({ enablePrivateMessaging: val })
+              }
+              trackColor={{ true: tintColor }}
+            />
+          </SettingItem>
+          <SettingItem label="记录浏览历史">
+            <Switch
+              value={enableBrowseHistory}
+              onValueChange={(val) =>
+                updateSettings({ enableBrowseHistory: val })
               }
               trackColor={{ true: tintColor }}
             />

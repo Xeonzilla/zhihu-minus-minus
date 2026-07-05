@@ -13,12 +13,14 @@ import Reanimated, { SharedTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import client from '@/api/client';
 import { getAnswer } from '@/api/zhihu';
+import { addReadHistory } from '@/api/zhihu/history';
 import { AnswerDetailView } from '@/components/AnswerDetailView';
 import { ShareMenu } from '@/components/ShareMenu';
 import { Text, View, useThemeColor } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { useZhihuInfiniteQuery } from '@/hooks/useZhihuInfiniteQuery';
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 const slowTransition = SharedTransition.duration(600);
 
@@ -38,6 +40,19 @@ export default function AnswerDetailScreen() {
 
   // 锁定初始 ID，避免滑动时 URL 参数改变导致重新触发 top-level loading
   const [initialId] = useState(id as string);
+
+  const enableBrowseHistory = useSettingsStore(
+    (s) => s.enableBrowseHistory,
+  );
+
+  const recordedIds = useRef(new Set<string>());
+
+  useEffect(() => {
+    if (enableBrowseHistory && initialId) {
+      addReadHistory({ content_token: initialId, content_type: 'answer' });
+      recordedIds.current.add(initialId);
+    }
+  }, [enableBrowseHistory, initialId]);
 
   // 1. 获取当前回答的基础信息（主要是为了拿到 questionId）
   const { data: initialAnswer, isLoading: loadingInitial } = useQuery({
@@ -130,6 +145,13 @@ export default function AnswerDetailScreen() {
   const pagerKey = `pager-${questionId}-${pagerReady ? 'ready' : 'pending'}`;
 
   const currentId = answerIds[currentPage];
+
+  useEffect(() => {
+    if (enableBrowseHistory && currentId && !recordedIds.current.has(currentId)) {
+      addReadHistory({ content_token: currentId, content_type: 'answer' });
+      recordedIds.current.add(currentId);
+    }
+  }, [enableBrowseHistory, currentId]);
 
   const handleShareClick = () => {
     if (!currentId) return;

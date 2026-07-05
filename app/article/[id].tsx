@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArticle, getDailyDetail } from '@/api/zhihu';
+import { addReadHistory } from '@/api/zhihu/history';
 import {
   fastCollectArticle,
   getArticleCollectionStatus,
@@ -34,6 +35,7 @@ import { ZhihuContent } from '@/components/ZhihuContent';
 import Colors from '@/constants/Colors';
 import { useOptimisticToggle } from '@/hooks/useOptimisticToggle';
 import { useCollectionStore } from '@/store/useCollectionStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 import { formatDate } from '@/utils/date';
 import { showToast } from '@/utils/toast';
 
@@ -71,6 +73,16 @@ export default function ArticleDetail() {
 
   const isLoading = isDaily ? dailyLoading : zhihuLoading;
   const data = isDaily ? dailyData : zhihuData;
+
+  const enableBrowseHistory = useSettingsStore(
+    (s) => s.enableBrowseHistory,
+  );
+
+  useEffect(() => {
+    if (enableBrowseHistory && id) {
+      addReadHistory({ content_token: id as string, content_type: 'article' });
+    }
+  }, [enableBrowseHistory, id]);
 
   // 3. 获取文章被收藏状态
   const { data: collectionStatus, refetch: refetchCollectionStatus } = useQuery(

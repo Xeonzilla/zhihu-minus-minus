@@ -28,6 +28,7 @@ import {
   searchContent,
   unfollowMember,
 } from '@/api/zhihu';
+import { addReadHistory } from '@/api/zhihu/history';
 import { FeedCard } from '@/components/FeedCard';
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -239,6 +240,19 @@ export default function UserDetailScreen() {
       }
     },
   });
+
+  const enableBrowseHistory = useSettingsStore(
+    (s) => s.enableBrowseHistory,
+  );
+
+  useEffect(() => {
+    if (enableBrowseHistory && user?.id) {
+      addReadHistory({
+        content_token: String(user.id),
+        content_type: 'profile',
+      });
+    }
+  }, [enableBrowseHistory, user?.id]);
 
   // 1. 动态 Query
   const activitiesQuery = useInfiniteQuery({

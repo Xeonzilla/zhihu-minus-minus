@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ActivityIndicator, Image, Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -11,10 +11,12 @@ import {
   getColumnItems,
   unfollowColumn,
 } from '@/api/zhihu/column';
+import { addReadHistory } from '@/api/zhihu/history';
 import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { useOptimisticToggle } from '@/hooks/useOptimisticToggle';
+import { useSettingsStore } from '@/store/useSettingsStore';
 import { formatDate } from '@/utils/date';
 
 export default function ColumnDetail() {
@@ -33,6 +35,19 @@ export default function ColumnDetail() {
     queryKey: ['column-detail', id],
     queryFn: () => getColumn(id),
   });
+
+  const enableBrowseHistory = useSettingsStore(
+    (s) => s.enableBrowseHistory,
+  );
+
+  useEffect(() => {
+    if (enableBrowseHistory && column?.id) {
+      addReadHistory({
+        content_token: String(column.id),
+        content_type: 'column',
+      });
+    }
+  }, [enableBrowseHistory, column?.id]);
 
   const followMutation = useOptimisticToggle({
     queryKey: ['column-detail', id],

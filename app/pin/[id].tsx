@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BlurView } from 'expo-blur';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -14,6 +14,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { followMember, unfollowMember } from '@/api/zhihu/member';
 import { getPin } from '@/api/zhihu/pin';
+import { addReadHistory } from '@/api/zhihu/history';
 import { LikeButton } from '@/components/LikeButton';
 import { ShareMenu } from '@/components/ShareMenu';
 import { Text, ThemedIcon, useThemeColor, View } from '@/components/Themed';
@@ -22,6 +23,7 @@ import { ZhihuContent } from '@/components/ZhihuContent';
 import Colors from '@/constants/Colors';
 import { useOptimisticToggle } from '@/hooks/useOptimisticToggle';
 import { formatDateTime } from '@/utils/date';
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 export default function PinDetailScreen() {
   const colorScheme = useColorScheme();
@@ -47,6 +49,16 @@ export default function PinDetailScreen() {
     queryKey: ['pin-detail', id],
     queryFn: () => getPin(id as string),
   });
+
+  const enableBrowseHistory = useSettingsStore(
+    (s) => s.enableBrowseHistory,
+  );
+
+  useEffect(() => {
+    if (enableBrowseHistory && pin?.id) {
+      addReadHistory({ content_token: String(pin.id), content_type: 'pin' });
+    }
+  }, [enableBrowseHistory, pin?.id]);
 
   const followMutation = useOptimisticToggle({
     mutationFn: async () => {
