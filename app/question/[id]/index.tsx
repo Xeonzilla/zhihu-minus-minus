@@ -250,8 +250,7 @@ const AnswerItem = forwardRef(
     const MetaInfo = metaText ? (
       <View
         style={{
-          marginTop: 12,
-          paddingTop: 10,
+          paddingTop: 4,
         }}
         className="bg-transparent"
       >
@@ -394,8 +393,8 @@ const AnswerItem = forwardRef(
             // Long content, never expanded: plain-text excerpt styled like ZhihuContent <p>
             <View className="flex-1 bg-transparent">
               {/* Text + gradient overlay in a relative container */}
-              <View style={{ position: 'relative', height: 150 }}>
-                <View style={{ height: 150, overflow: 'hidden' }}>
+              <View style={{ position: 'relative', height: 180 }}>
+                <View style={{ height: 180, overflow: 'hidden' }}>
                   <Text
                     style={{
                       fontSize: 17 * fontSizeScale,
@@ -415,7 +414,7 @@ const AnswerItem = forwardRef(
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    height: 80,
+                    height: 150,
                   }}
                 >
                   <LinearGradient
