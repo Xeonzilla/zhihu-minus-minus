@@ -175,20 +175,11 @@ export const FeedCard = ({ item, tab }: { item: FeedItem; tab?: string }) => {
       {/* 摘要与图片 - 统一为主卡片点击，完美穿透 */}
       <View className="flex-row mt-1 bg-transparent">
         <View className="flex-1 bg-transparent">
-          {isQuestionType && item.excerpt ? (
-            <FeedExcerpt html={item.excerpt} />
-          ) : isPinType && Array.isArray(item.content) ? (
+          {isPinType && Array.isArray(item.content) ? (
             <FeedExcerpt contentArray={item.content as any[]} />
-          ) : (
-            <Text
-              type="secondary"
-              className="text-[17px]"
-              style={{ lineHeight: 27 }}
-              numberOfLines={3}
-            >
-              {item.excerpt}
-            </Text>
-          )}
+          ) : item.excerpt ? (
+            <FeedExcerpt html={item.excerpt} />
+          ) : null}
         </View>
         {item.image && (
           <Animated.Image
