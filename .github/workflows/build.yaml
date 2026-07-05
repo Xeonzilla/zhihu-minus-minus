@@ -1,36 +1,30 @@
 name: Build and Release
 
 on:
-  workflow_dispatch: # 纯粹的手动点击触发，无需任何选项
+  workflow_dispatch: # 纯粹的手动点击触发
 
 env:
   NODE_VERSION: 22.x
   EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  # 统一的环境配置
-  BUILD_TYPE: prod
-  EAS_PROFILE: prod-ci
+  # 🌟 改为 preview 环境
+  BUILD_TYPE: preview
+  EAS_PROFILE: preview
 
 jobs:
   build:
-    runs-on: ubuntu-latest # 使用 GitHub 官方免费服务器
-    strategy:
-      fail-fast: false
-      matrix:
-        # 直接写死需要打包的架构
-        arch: [arm64-v8a]
+    runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: read
     env:
-      ABI_FILTERS: ${{ matrix.arch }}
       EAS_LOCAL_BUILD_SKIP_CLEANUP: 1
 
     steps:
       - name: 🏗 Setup repo
         uses: actions/checkout@v5
         with:
-          fetch-depth: 0 # 获取完整历史记录以计算版本号(commit 数量)
+          fetch-depth: 0 
 
       - name: 🏗 Setup Node
         uses: actions/setup-node@v4
@@ -51,18 +45,16 @@ jobs:
       - name: ⚙️ Prepare Variables
         id: prepare-vars
         run: |
-          # 🌟 改为直接读取根目录的 package.json
           APP_VERSION=$(node -p "require('./package.json').version")
           VERSION_CODE=$(git rev-list --count HEAD)
 
-          # e.g. zhihu-minus-minus-v1.0.0-prod-arm64-v8a
-          APK_NAME="zhihu-minus-minus-v${APP_VERSION}-${{ env.BUILD_TYPE }}-${{ matrix.arch }}"
+          # 🌟 因为你的 eas.json 写死了 arm64-v8a，所以这里直接固定架构名称
+          APK_NAME="zhihu-minus-minus-v${APP_VERSION}-${{ env.BUILD_TYPE }}-arm64-v8a"
           ARTIFACT_DIR="${RUNNER_TEMP}/${APK_NAME}"
 
           mkdir -p "$ARTIFACT_DIR"
 
           echo "APK_TEMP_PATH=${ARTIFACT_DIR}/${APK_NAME}.apk" >> $GITHUB_ENV
-          echo "EAS_LOCAL_BUILD_WORKINGDIR=${RUNNER_TEMP}/eas-local-build-${{ matrix.arch }}" >> $GITHUB_ENV
           echo "VERSION_CODE=${VERSION_CODE}" >> $GITHUB_ENV
 
           echo "apkName=${APK_NAME}" >> $GITHUB_OUTPUT
@@ -73,12 +65,11 @@ jobs:
           FIREBASE_ANDROID_JSON_B64: ${{ secrets.FIREBASE_ANDROID_JSON_B64 }}
         if: ${{ env.FIREBASE_ANDROID_JSON_B64 != '' }}
         run: |
-          # 🌟 同样去掉了 apps/mobile 前缀
           mkdir -p assets/config/google-services
           echo "$FIREBASE_ANDROID_JSON_B64" | base64 -d > assets/config/google-services/google-services.real.json
 
       - name: 🚀 Build APK
-        # 🌟 直接在当前目录执行 eas build
+        # 使用 preview profile 执行打包
         run: eas build --platform android --profile ${{ env.EAS_PROFILE }} --local --no-wait --output="$APK_TEMP_PATH"
 
       - name: 🚀 Upload Artifact
@@ -105,7 +96,6 @@ jobs:
 
       - name: ⚙️ Prepare Release Variables
         run: |
-          # 🌟 这里也改为了根目录
           APP_VERSION=$(node -p "require('./package.json').version")
           RELEASE_TAG="v${APP_VERSION}"
           echo "RELEASE_TAG=${RELEASE_TAG}" >> $GITHUB_ENV
