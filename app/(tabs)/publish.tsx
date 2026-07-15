@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BouncyButton } from '@/components/BouncyButton';
-import { Text, View, ThemedIcon, useThemeColor } from '@/components/Themed';
+import { Text, ThemedIcon, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 
@@ -73,16 +73,18 @@ export default function PublishView() {
           <BouncyButton
             key={item.id}
             className="flex-row items-center p-5 rounded-[20px] mb-4 border bg-surface dark:bg-surface-dark"
-            style={[
-              { borderColor: Colors[colorScheme].border },
-            ]}
+            style={[{ borderColor: Colors[colorScheme].border }]}
             onPress={() => handlePublish(item.id)}
           >
             <View
               className="w-14 h-14 rounded-2xl justify-center items-center mr-4"
               style={{ backgroundColor: colors[item.colorType] + '15' }}
             >
-              <ThemedIcon name={item.icon} size={32} colorType={item.colorType} />
+              <ThemedIcon
+                name={item.icon}
+                size={32}
+                colorType={item.colorType}
+              />
             </View>
             <View className="flex-1 bg-transparent">
               <Text className="text-lg font-bold mb-1 text-foreground dark:text-foreground-dark">

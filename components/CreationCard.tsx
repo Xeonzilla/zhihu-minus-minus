@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { View as NativeView, Pressable } from 'react-native';
@@ -13,7 +14,6 @@ import { BouncyButton } from './BouncyButton';
 import { LikeButton } from './LikeButton';
 import { type ShareContentType, ShareMenu } from './ShareMenu';
 import { ZhihuContent } from './ZhihuContent';
-import { LinearGradient } from 'expo-linear-gradient';
 
 export const CreationCard = React.forwardRef(
   (
@@ -211,7 +211,7 @@ export const CreationCard = React.forwardRef(
 
         <View className="bg-transparent mt-1">
           {expanded &&
-            (type === 'answer' || type === 'article' || type === 'pin') ? (
+          (type === 'answer' || type === 'article' || type === 'pin') ? (
             <View className="flex-1 bg-transparent mt-1">
               <ZhihuContent
                 objectId={item.id?.toString()}
@@ -238,11 +238,7 @@ export const CreationCard = React.forwardRef(
                       ? '文章'
                       : '想法'}
                 </Text>
-                <Ionicons
-                  name="chevron-up"
-                  size={14}
-                  color={primaryColor}
-                />
+                <Ionicons name="chevron-up" size={14} color={primaryColor} />
               </Pressable>
             </View>
           ) : type === 'answer' || type === 'article' || type === 'pin' ? (
@@ -271,8 +267,12 @@ export const CreationCard = React.forwardRef(
                 >
                   <LinearGradient
                     colors={[
-                      colorScheme === 'dark' ? 'rgba(26, 26, 26, 0)' : 'rgba(255, 255, 255, 0)',
-                      colorScheme === 'dark' ? 'rgba(26, 26, 26, 1)' : 'rgba(255, 255, 255, 1)',
+                      colorScheme === 'dark'
+                        ? 'rgba(26, 26, 26, 0)'
+                        : 'rgba(255, 255, 255, 0)',
+                      colorScheme === 'dark'
+                        ? 'rgba(26, 26, 26, 1)'
+                        : 'rgba(255, 255, 255, 1)',
                     ]}
                     style={{
                       position: 'absolute',
@@ -418,15 +418,15 @@ export const CreationCard = React.forwardRef(
               className="text-xs text-tertiary dark:text-tertiary-dark mr-3"
             >
               {item.updated_time ||
-                item.updated ||
-                item.created_time ||
-                item.created
+              item.updated ||
+              item.created_time ||
+              item.created
                 ? new Date(
-                  (item.updated_time ||
-                    item.updated ||
-                    item.created_time ||
-                    item.created) * 1000,
-                ).toLocaleDateString()
+                    (item.updated_time ||
+                      item.updated ||
+                      item.created_time ||
+                      item.created) * 1000,
+                  ).toLocaleDateString()
                 : ''}
             </Text>
             <BouncyButton

@@ -12,9 +12,9 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { addReadHistory } from '@/api/zhihu/history';
 import { followMember, unfollowMember } from '@/api/zhihu/member';
 import { getPin } from '@/api/zhihu/pin';
-import { addReadHistory } from '@/api/zhihu/history';
 import { LikeButton } from '@/components/LikeButton';
 import { ShareMenu } from '@/components/ShareMenu';
 import { Text, ThemedIcon, useThemeColor, View } from '@/components/Themed';
@@ -22,8 +22,8 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { ZhihuContent } from '@/components/ZhihuContent';
 import Colors from '@/constants/Colors';
 import { useOptimisticToggle } from '@/hooks/useOptimisticToggle';
-import { formatDateTime } from '@/utils/date';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { formatDateTime } from '@/utils/date';
 
 export default function PinDetailScreen() {
   const colorScheme = useColorScheme();
@@ -50,9 +50,7 @@ export default function PinDetailScreen() {
     queryFn: () => getPin(id as string),
   });
 
-  const enableBrowseHistory = useSettingsStore(
-    (s) => s.enableBrowseHistory,
-  );
+  const enableBrowseHistory = useSettingsStore((s) => s.enableBrowseHistory);
 
   useEffect(() => {
     if (enableBrowseHistory && pin?.id) {

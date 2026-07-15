@@ -7,8 +7,8 @@ import {
   isInternalZhihuLink,
   parseZhihuUrl,
 } from '@/utils/url';
-import { LinkCard } from './ZhihuContent';
 import { Text, View } from './Themed';
+import { LinkCard } from './ZhihuContent';
 
 function parseExcerpt(html: string): { text: string; links: string[] } {
   const links: string[] = [];
@@ -17,7 +17,10 @@ function parseExcerpt(html: string): { text: string; links: string[] } {
   while ((m = linkRegex.exec(html)) !== null) {
     links.push(m[1]);
   }
-  const text = html.replace(/<[^>]+>/g, ' ').replace(/\s{2,}/g, ' ').trim();
+  const text = html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
   return { text, links };
 }
 
@@ -37,7 +40,9 @@ function parsePinContent(contentArray: PinContentItem[]): {
   const links: PinContentItem[] = [];
   for (const item of contentArray) {
     if (item.type === 'text' && item.content) {
-      textBlocks.push(item.content.replace(/<[^>]+>/g, ' ').replace(/\s{2,}/g, ' '));
+      textBlocks.push(
+        item.content.replace(/<[^>]+>/g, ' ').replace(/\s{2,}/g, ' '),
+      );
     } else if (item.type === 'link_card') {
       links.push(item);
     }
@@ -52,7 +57,8 @@ function isString(v: any): v is string {
 export const FeedExcerpt: React.FC<{
   html?: string | React.ReactNode;
   contentArray?: PinContentItem[];
-}> = React.memo(({ html, contentArray }) => {
+  numberOfLines?: number;
+}> = React.memo(({ html, contentArray, numberOfLines = 3 }) => {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const surfaceColor = Colors[colorScheme].backgroundSecondary;
@@ -60,9 +66,13 @@ export const FeedExcerpt: React.FC<{
   const parsed = useMemo(() => {
     if (contentArray) {
       const result = parsePinContent(contentArray);
-      return { text: result.text as React.ReactNode, links: result.links.map((l) => l.url || '') };
+      return {
+        text: result.text as React.ReactNode,
+        links: result.links.map((l) => l.url || ''),
+      };
     }
-    if (html && isString(html)) return { text: parseExcerpt(html).text, links: parseExcerpt(html).links };
+    if (html && isString(html))
+      return { text: parseExcerpt(html).text, links: parseExcerpt(html).links };
     return { text: html || null, links: [] as string[] };
   }, [html, contentArray]);
 
@@ -81,6 +91,8 @@ export const FeedExcerpt: React.FC<{
 
   if (!parsed.text && parsed.links.length === 0) return null;
 
+  const limitLines = numberOfLines === 0 ? undefined : numberOfLines;
+
   return (
     <View className="bg-transparent">
       {parsed.text ? (
@@ -89,7 +101,7 @@ export const FeedExcerpt: React.FC<{
             type="secondary"
             className="text-[17px]"
             style={{ lineHeight: 27 }}
-            numberOfLines={3}
+            numberOfLines={limitLines}
           >
             {parsed.text}
           </Text>
@@ -98,7 +110,7 @@ export const FeedExcerpt: React.FC<{
             type="secondary"
             className="text-[17px]"
             style={{ lineHeight: 27 }}
-            numberOfLines={3}
+            numberOfLines={limitLines}
           >
             {parsed.text}
           </Text>

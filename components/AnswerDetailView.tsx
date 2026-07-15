@@ -27,7 +27,7 @@ import { DownvoteButton } from '@/components/DownvoteButton';
 import { LikeButton } from '@/components/LikeButton';
 import { MenuOption } from '@/components/MenuOption';
 import { ShareMenu } from '@/components/ShareMenu';
-import { Text, useThemeColor, View, ThemedIcon } from '@/components/Themed';
+import { Text, ThemedIcon, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import { ZhihuContent } from '@/components/ZhihuContent';
 import Colors from '@/constants/Colors';
@@ -35,8 +35,8 @@ import { useCollectionAction } from '@/hooks/useCollectionAction';
 import { useOptimisticToggle } from '@/hooks/useOptimisticToggle';
 import { useScrollHeaderAnim } from '@/hooks/useScrollAnimation';
 import { useCollectionStore } from '@/store/useCollectionStore';
-import { showToast } from '@/utils/toast';
 import { formatDate } from '@/utils/date';
+import { showToast } from '@/utils/toast';
 
 const _slowTransition = SharedTransition.duration(600);
 
@@ -325,10 +325,10 @@ export const AnswerDetailView = ({
               !answer?.author?.is_following
                 ? { backgroundColor: primaryTransparent }
                 : {
-                  backgroundColor: 'transparent',
-                  borderWidth: 1,
-                  borderColor: Colors[colorScheme].border,
-                },
+                    backgroundColor: 'transparent',
+                    borderWidth: 1,
+                    borderColor: Colors[colorScheme].border,
+                  },
             ]}
             onPress={() => followMutation.mutate()}
             disabled={followMutation.isPending}
@@ -396,7 +396,6 @@ export const AnswerDetailView = ({
                     ? `编辑于 ${formatDate(answer.updated_time)}`
                     : null,
                   answer?.ip_info ? answer.ip_info : null,
-
                 ]
                   .filter(Boolean)
                   .join('  ·  ')}
@@ -444,7 +443,11 @@ export const AnswerDetailView = ({
                 className="items-center ml-5 flex-row bg-transparent"
                 onPress={() => router.push(`/comments/${id}?type=answer`)}
               >
-                <ThemedIcon name="chatbubble-outline" size={24} colorType="secondary" />
+                <ThemedIcon
+                  name="chatbubble-outline"
+                  size={24}
+                  colorType="secondary"
+                />
                 {answer?.comment_count > 0 && (
                   <Text
                     type="secondary"
@@ -458,7 +461,11 @@ export const AnswerDetailView = ({
                 className="items-center ml-5 flex-row bg-transparent"
                 onPress={() => setMenuVisible(true)}
               >
-                <ThemedIcon name="ellipsis-horizontal" size={24} colorType="secondary" />
+                <ThemedIcon
+                  name="ellipsis-horizontal"
+                  size={24}
+                  colorType="secondary"
+                />
               </Pressable>
             </View>
           </View>
@@ -472,12 +479,12 @@ export const AnswerDetailView = ({
         data={
           answer
             ? {
-              id: answer.id,
-              title: answer.question?.title,
-              author: answer.author?.name,
-              authorHeadline: answer.author?.headline,
-              url: getShareLink(),
-            }
+                id: answer.id,
+                title: answer.question?.title,
+                author: answer.author?.name,
+                authorHeadline: answer.author?.headline,
+                url: getShareLink(),
+              }
             : null
         }
       />

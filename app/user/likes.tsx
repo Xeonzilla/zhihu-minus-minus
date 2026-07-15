@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 import { getMyLikes } from '@/api/zhihu';
 import { CreationCard } from '@/components/CreationCard';
-import { Text, View, useThemeColor } from '@/components/Themed';
+import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { useZhihuInfiniteQuery } from '@/hooks/useZhihuInfiniteQuery';

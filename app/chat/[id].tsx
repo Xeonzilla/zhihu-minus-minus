@@ -154,7 +154,7 @@ export default function ChatScreen() {
                     shadowRadius: 2,
                     elevation: 2,
                   }
-                : {}
+                : {},
             ]}
           >
             {messageInfo.content_type === 0 ? (

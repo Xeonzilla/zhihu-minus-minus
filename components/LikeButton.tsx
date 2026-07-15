@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -21,12 +21,14 @@ export const LikeButton = ({
   voted: initialVoted = 0,
   type = 'answers',
   variant = 'default',
+  onVoteChange,
 }: {
   id: string | number;
   count: number;
   voted?: number;
   type?: 'answers' | 'articles' | 'questions' | 'pins' | 'comments';
   variant?: 'default' | 'ghost' | 'minimal';
+  onVoteChange?: (voted: number, count: number) => void;
 }) => {
   const [voted, setVoted] = useState(initialVoted);
   const [count, setCount] = useState(initialCount);
@@ -75,7 +77,9 @@ export const LikeButton = ({
       await voteContent(id, type, voteType as any);
 
       setVoted(nextVoted);
-      setCount((prev) => (isUpvoted ? prev - 1 : prev + 1));
+      const newCount = isUpvoted ? count - 1 : count + 1;
+      setCount(newCount);
+      onVoteChange?.(nextVoted, newCount);
       showToast(isUpvoted ? '已取消赞同' : '已赞同');
     } catch (err) {
       console.error('投票失败:', err);

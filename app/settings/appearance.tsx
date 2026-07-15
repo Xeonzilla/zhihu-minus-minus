@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
-import React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  LayoutAnimation,
   PanResponder,
   Platform,
   Pressable,
@@ -11,7 +11,6 @@ import {
   StyleSheet,
   Switch,
   TextInput,
-  LayoutAnimation,
   UIManager,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,7 +21,10 @@ import Colors from '@/constants/Colors';
 import { type TabKey, useSettingsStore } from '@/store/useSettingsStore';
 
 // 开启 Android 下的 LayoutAnimation
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
@@ -88,8 +90,15 @@ export default function AppearanceSettings() {
 
   return (
     // 使用全局底色（深色模式下为纯黑，浅色模式下为浅灰，凸显卡片感）
-    <RNView style={[styles.container, { backgroundColor: isDark ? '#000000' : '#F2F2F6' }]}>
-      <Stack.Screen options={{ title: '外观与定制', headerShadowVisible: false }} />
+    <RNView
+      style={[
+        styles.container,
+        { backgroundColor: isDark ? '#000000' : '#F2F2F6' },
+      ]}
+    >
+      <Stack.Screen
+        options={{ title: '外观与定制', headerShadowVisible: false }}
+      />
 
       <ScrollView
         contentContainerStyle={{
@@ -99,38 +108,92 @@ export default function AppearanceSettings() {
       >
         {/* 1. 字体风格 */}
         <Section title="字体与排版" colorScheme={colorScheme}>
-          <SettingItem label="字体大小" icon="text-outline" colorScheme={colorScheme}>
+          <SettingItem
+            label="字体大小"
+            icon="text-outline"
+            colorScheme={colorScheme}
+          >
             <View style={styles.row}>
               <Pressable
-                onPress={() => updateSettings({ fontSizeScale: Math.max(0.8, fontSizeScale - 0.1) })}
-                style={[styles.smallBtn, { backgroundColor: Colors[colorScheme].backgroundTertiary }]}
+                onPress={() =>
+                  updateSettings({
+                    fontSizeScale: Math.max(0.8, fontSizeScale - 0.1),
+                  })
+                }
+                style={[
+                  styles.smallBtn,
+                  { backgroundColor: Colors[colorScheme].backgroundTertiary },
+                ]}
               >
-                <Ionicons name="remove" size={18} color={Colors[colorScheme].text} />
+                <Ionicons
+                  name="remove"
+                  size={18}
+                  color={Colors[colorScheme].text}
+                />
               </Pressable>
               <Text style={styles.valueText}>{fontSizeScale.toFixed(1)}x</Text>
               <Pressable
-                onPress={() => updateSettings({ fontSizeScale: Math.min(1.5, fontSizeScale + 0.1) })}
-                style={[styles.smallBtn, { backgroundColor: Colors[colorScheme].backgroundTertiary }]}
+                onPress={() =>
+                  updateSettings({
+                    fontSizeScale: Math.min(1.5, fontSizeScale + 0.1),
+                  })
+                }
+                style={[
+                  styles.smallBtn,
+                  { backgroundColor: Colors[colorScheme].backgroundTertiary },
+                ]}
               >
-                <Ionicons name="add" size={18} color={Colors[colorScheme].text} />
+                <Ionicons
+                  name="add"
+                  size={18}
+                  color={Colors[colorScheme].text}
+                />
               </Pressable>
             </View>
           </SettingItem>
 
-          <SettingItem label="行高比例" icon="reorder-two-outline" colorScheme={colorScheme}>
+          <SettingItem
+            label="行高比例"
+            icon="reorder-two-outline"
+            colorScheme={colorScheme}
+          >
             <View style={styles.row}>
               <Pressable
-                onPress={() => updateSettings({ lineHeightScale: Math.max(1.0, lineHeightScale - 0.1) })}
-                style={[styles.smallBtn, { backgroundColor: Colors[colorScheme].backgroundTertiary }]}
+                onPress={() =>
+                  updateSettings({
+                    lineHeightScale: Math.max(1.0, lineHeightScale - 0.1),
+                  })
+                }
+                style={[
+                  styles.smallBtn,
+                  { backgroundColor: Colors[colorScheme].backgroundTertiary },
+                ]}
               >
-                <Ionicons name="remove" size={18} color={Colors[colorScheme].text} />
+                <Ionicons
+                  name="remove"
+                  size={18}
+                  color={Colors[colorScheme].text}
+                />
               </Pressable>
-              <Text style={styles.valueText}>{lineHeightScale.toFixed(1)}x</Text>
+              <Text style={styles.valueText}>
+                {lineHeightScale.toFixed(1)}x
+              </Text>
               <Pressable
-                onPress={() => updateSettings({ lineHeightScale: Math.min(2.5, lineHeightScale + 0.1) })}
-                style={[styles.smallBtn, { backgroundColor: Colors[colorScheme].backgroundTertiary }]}
+                onPress={() =>
+                  updateSettings({
+                    lineHeightScale: Math.min(2.5, lineHeightScale + 0.1),
+                  })
+                }
+                style={[
+                  styles.smallBtn,
+                  { backgroundColor: Colors[colorScheme].backgroundTertiary },
+                ]}
               >
-                <Ionicons name="add" size={18} color={Colors[colorScheme].text} />
+                <Ionicons
+                  name="add"
+                  size={18}
+                  color={Colors[colorScheme].text}
+                />
               </Pressable>
             </View>
           </SettingItem>
@@ -146,7 +209,10 @@ export default function AppearanceSettings() {
                 style={[
                   styles.colorCircle,
                   { backgroundColor: color },
-                  primaryColor === color && { borderColor: isDark ? '#fff' : '#000', borderWidth: 3 },
+                  primaryColor === color && {
+                    borderColor: isDark ? '#fff' : '#000',
+                    borderWidth: 3,
+                  },
                 ]}
               />
             ))}
@@ -154,15 +220,30 @@ export default function AppearanceSettings() {
               onPress={() => updateSettings({ primaryColor: '#0084ff' })}
               style={[
                 styles.colorCircle,
-                { backgroundColor: isDark ? '#333' : '#e5e5ea', justifyContent: 'center', alignItems: 'center' },
-                primaryColor === '#0084ff' && { borderColor: isDark ? '#fff' : '#000', borderWidth: 3 },
+                {
+                  backgroundColor: isDark ? '#333' : '#e5e5ea',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                },
+                primaryColor === '#0084ff' && {
+                  borderColor: isDark ? '#fff' : '#000',
+                  borderWidth: 3,
+                },
               ]}
             >
-              <Ionicons name="refresh" size={20} color={isDark ? '#aaa' : '#666'} />
+              <Ionicons
+                name="refresh"
+                size={20}
+                color={isDark ? '#aaa' : '#666'}
+              />
             </Pressable>
           </RNView>
 
-          <SettingItem label="自定义颜色" icon="color-palette-outline" colorScheme={colorScheme}>
+          <SettingItem
+            label="自定义颜色"
+            icon="color-palette-outline"
+            colorScheme={colorScheme}
+          >
             <Switch
               value={showAdvancedColor}
               onValueChange={toggleAdvancedColor}
@@ -181,72 +262,186 @@ export default function AppearanceSettings() {
         {/* 3. 按压反馈 */}
         <Section title="交互与反馈" colorScheme={colorScheme}>
           {Platform.OS === 'android' && (
-            <SettingItem label="反馈类型" icon="hardware-chip-outline" colorScheme={colorScheme}>
+            <SettingItem
+              label="反馈类型"
+              icon="hardware-chip-outline"
+              colorScheme={colorScheme}
+            >
               <View style={styles.row}>
                 <Pressable
-                  onPress={() => updateSettings({ androidFeedbackType: 'ripple' })}
+                  onPress={() =>
+                    updateSettings({ androidFeedbackType: 'ripple' })
+                  }
                   style={[
                     styles.tabChip,
-                    { backgroundColor: Colors[colorScheme].backgroundTertiary, marginRight: 8 },
-                    androidFeedbackType === 'ripple' && { backgroundColor: tintColor },
+                    {
+                      backgroundColor: Colors[colorScheme].backgroundTertiary,
+                      marginRight: 8,
+                    },
+                    androidFeedbackType === 'ripple' && {
+                      backgroundColor: tintColor,
+                    },
                   ]}
                 >
-                  <Text style={[styles.tabChipText, androidFeedbackType === 'ripple' && { color: '#fff', fontWeight: 'bold' }]}>水波纹</Text>
+                  <Text
+                    style={[
+                      styles.tabChipText,
+                      androidFeedbackType === 'ripple' && {
+                        color: '#fff',
+                        fontWeight: 'bold',
+                      },
+                    ]}
+                  >
+                    水波纹
+                  </Text>
                 </Pressable>
                 <Pressable
-                  onPress={() => updateSettings({ androidFeedbackType: 'scale-opacity' })}
+                  onPress={() =>
+                    updateSettings({ androidFeedbackType: 'scale-opacity' })
+                  }
                   style={[
                     styles.tabChip,
                     { backgroundColor: Colors[colorScheme].backgroundTertiary },
-                    androidFeedbackType === 'scale-opacity' && { backgroundColor: tintColor },
+                    androidFeedbackType === 'scale-opacity' && {
+                      backgroundColor: tintColor,
+                    },
                   ]}
                 >
-                  <Text style={[styles.tabChipText, androidFeedbackType === 'scale-opacity' && { color: '#fff', fontWeight: 'bold' }]}>缩放</Text>
+                  <Text
+                    style={[
+                      styles.tabChipText,
+                      androidFeedbackType === 'scale-opacity' && {
+                        color: '#fff',
+                        fontWeight: 'bold',
+                      },
+                    ]}
+                  >
+                    缩放
+                  </Text>
                 </Pressable>
               </View>
             </SettingItem>
           )}
 
-          {(Platform.OS !== 'android' || androidFeedbackType === 'scale-opacity') && (
+          {(Platform.OS !== 'android' ||
+            androidFeedbackType === 'scale-opacity') && (
             <>
-              <SettingItem label="按压不透明度" icon="contrast-outline" colorScheme={colorScheme}>
+              <SettingItem
+                label="按压不透明度"
+                icon="contrast-outline"
+                colorScheme={colorScheme}
+              >
                 <View style={styles.row}>
                   <Pressable
-                    onPress={() => updateSettings({ pressOpacity: Math.max(0.5, parseFloat((pressOpacity - 0.05).toFixed(2))) })}
-                    style={[styles.smallBtn, { backgroundColor: Colors[colorScheme].backgroundTertiary }]}
+                    onPress={() =>
+                      updateSettings({
+                        pressOpacity: Math.max(
+                          0.5,
+                          parseFloat((pressOpacity - 0.05).toFixed(2)),
+                        ),
+                      })
+                    }
+                    style={[
+                      styles.smallBtn,
+                      {
+                        backgroundColor: Colors[colorScheme].backgroundTertiary,
+                      },
+                    ]}
                   >
-                    <Ionicons name="remove" size={18} color={Colors[colorScheme].text} />
+                    <Ionicons
+                      name="remove"
+                      size={18}
+                      color={Colors[colorScheme].text}
+                    />
                   </Pressable>
-                  <Text style={styles.valueText}>{pressOpacity.toFixed(2)}</Text>
+                  <Text style={styles.valueText}>
+                    {pressOpacity.toFixed(2)}
+                  </Text>
                   <Pressable
-                    onPress={() => updateSettings({ pressOpacity: Math.min(1.0, parseFloat((pressOpacity + 0.05).toFixed(2))) })}
-                    style={[styles.smallBtn, { backgroundColor: Colors[colorScheme].backgroundTertiary }]}
+                    onPress={() =>
+                      updateSettings({
+                        pressOpacity: Math.min(
+                          1.0,
+                          parseFloat((pressOpacity + 0.05).toFixed(2)),
+                        ),
+                      })
+                    }
+                    style={[
+                      styles.smallBtn,
+                      {
+                        backgroundColor: Colors[colorScheme].backgroundTertiary,
+                      },
+                    ]}
                   >
-                    <Ionicons name="add" size={18} color={Colors[colorScheme].text} />
+                    <Ionicons
+                      name="add"
+                      size={18}
+                      color={Colors[colorScheme].text}
+                    />
                   </Pressable>
                 </View>
               </SettingItem>
-              <SettingItem label="按压缩放比例" icon="expand-outline" colorScheme={colorScheme}>
+              <SettingItem
+                label="按压缩放比例"
+                icon="expand-outline"
+                colorScheme={colorScheme}
+              >
                 <View style={styles.row}>
                   <Pressable
-                    onPress={() => updateSettings({ pressScale: Math.max(0.88, parseFloat((pressScale - 0.01).toFixed(2))) })}
-                    style={[styles.smallBtn, { backgroundColor: Colors[colorScheme].backgroundTertiary }]}
+                    onPress={() =>
+                      updateSettings({
+                        pressScale: Math.max(
+                          0.88,
+                          parseFloat((pressScale - 0.01).toFixed(2)),
+                        ),
+                      })
+                    }
+                    style={[
+                      styles.smallBtn,
+                      {
+                        backgroundColor: Colors[colorScheme].backgroundTertiary,
+                      },
+                    ]}
                   >
-                    <Ionicons name="remove" size={18} color={Colors[colorScheme].text} />
+                    <Ionicons
+                      name="remove"
+                      size={18}
+                      color={Colors[colorScheme].text}
+                    />
                   </Pressable>
                   <Text style={styles.valueText}>{pressScale.toFixed(2)}</Text>
                   <Pressable
-                    onPress={() => updateSettings({ pressScale: Math.min(1.0, parseFloat((pressScale + 0.01).toFixed(2))) })}
-                    style={[styles.smallBtn, { backgroundColor: Colors[colorScheme].backgroundTertiary }]}
+                    onPress={() =>
+                      updateSettings({
+                        pressScale: Math.min(
+                          1.0,
+                          parseFloat((pressScale + 0.01).toFixed(2)),
+                        ),
+                      })
+                    }
+                    style={[
+                      styles.smallBtn,
+                      {
+                        backgroundColor: Colors[colorScheme].backgroundTertiary,
+                      },
+                    ]}
                   >
-                    <Ionicons name="add" size={18} color={Colors[colorScheme].text} />
+                    <Ionicons
+                      name="add"
+                      size={18}
+                      color={Colors[colorScheme].text}
+                    />
                   </Pressable>
                 </View>
               </SettingItem>
             </>
           )}
 
-          <SettingItem label="实时预览" icon="play-circle-outline" colorScheme={colorScheme}>
+          <SettingItem
+            label="实时预览"
+            icon="play-circle-outline"
+            colorScheme={colorScheme}
+          >
             <BouncyButton hapticFeedback={false} style={[styles.previewBtn]}>
               <Text style={{ fontSize: 13, fontWeight: 'bold' }}>按我测试</Text>
             </BouncyButton>
@@ -256,7 +451,12 @@ export default function AppearanceSettings() {
         {/* 4. 栏目展示 */}
         <Section title="底部导航栏 (至少保留一个)" colorScheme={colorScheme}>
           {(Object.keys(TAB_LABELS) as TabKey[]).map((tab) => (
-            <SettingItem key={tab} label={TAB_LABELS[tab]} icon="layers-outline" colorScheme={colorScheme}>
+            <SettingItem
+              key={tab}
+              label={TAB_LABELS[tab]}
+              icon="layers-outline"
+              colorScheme={colorScheme}
+            >
               <Switch
                 value={visibleTabs.includes(tab)}
                 onValueChange={() => toggleTab(tab)}
@@ -280,7 +480,12 @@ export default function AppearanceSettings() {
                   defaultTab === tab && { backgroundColor: tintColor },
                 ]}
               >
-                <Text style={[styles.tabChipText, defaultTab === tab && { color: '#fff', fontWeight: 'bold' }]}>
+                <Text
+                  style={[
+                    styles.tabChipText,
+                    defaultTab === tab && { color: '#fff', fontWeight: 'bold' },
+                  ]}
+                >
                   {TAB_LABELS[tab]}
                 </Text>
               </Pressable>
@@ -290,19 +495,65 @@ export default function AppearanceSettings() {
 
         {/* 6. 实验性功能 */}
         <Section title="实验性功能 (默认关闭)" colorScheme={colorScheme}>
-          <SettingItem label="启用 WebView 渲染" icon="globe-outline" colorScheme={colorScheme}>
-            <Switch value={useWebView} onValueChange={(val) => updateSettings({ useWebView: val })} trackColor={{ true: tintColor }} />
+          <SettingItem
+            label="启用 WebView 渲染"
+            icon="globe-outline"
+            colorScheme={colorScheme}
+          >
+            <Switch
+              value={useWebView}
+              onValueChange={(val) => updateSettings({ useWebView: val })}
+              trackColor={{ true: tintColor }}
+            />
           </SettingItem>
-          <SettingItem label="启用私信功能 (IM)" icon="chatbubbles-outline" colorScheme={colorScheme}>
-            <Switch value={enablePrivateMessaging} onValueChange={(val) => updateSettings({ enablePrivateMessaging: val })} trackColor={{ true: tintColor }} />
+          <SettingItem
+            label="启用私信功能 (IM)"
+            icon="chatbubbles-outline"
+            colorScheme={colorScheme}
+          >
+            <Switch
+              value={enablePrivateMessaging}
+              onValueChange={(val) =>
+                updateSettings({ enablePrivateMessaging: val })
+              }
+              trackColor={{ true: tintColor }}
+            />
           </SettingItem>
-          <SettingItem label="记录浏览历史" icon="time-outline" colorScheme={colorScheme}>
-            <Switch value={enableBrowseHistory} onValueChange={(val) => updateSettings({ enableBrowseHistory: val })} trackColor={{ true: tintColor }} />
+          <SettingItem
+            label="记录浏览历史"
+            icon="time-outline"
+            colorScheme={colorScheme}
+          >
+            <Switch
+              value={enableBrowseHistory}
+              onValueChange={(val) =>
+                updateSettings({ enableBrowseHistory: val })
+              }
+              trackColor={{ true: tintColor }}
+            />
           </SettingItem>
         </Section>
 
-        <Pressable onPress={resetSettings} style={[styles.resetBtn, { backgroundColor: isDark ? 'rgba(255,77,79,0.15)' : 'rgba(255,77,79,0.08)' }]}>
-          <Text style={{ color: Colors[colorScheme].danger, fontWeight: '600', fontSize: 16 }}>恢复默认设置</Text>
+        <Pressable
+          onPress={resetSettings}
+          style={[
+            styles.resetBtn,
+            {
+              backgroundColor: isDark
+                ? 'rgba(255,77,79,0.15)'
+                : 'rgba(255,77,79,0.08)',
+            },
+          ]}
+        >
+          <Text
+            style={{
+              color: Colors[colorScheme].danger,
+              fontWeight: '600',
+              fontSize: 16,
+            }}
+          >
+            恢复默认设置
+          </Text>
         </Pressable>
       </ScrollView>
     </RNView>
@@ -311,7 +562,15 @@ export default function AppearanceSettings() {
 
 // ================= UI Components =================
 
-function Section({ title, children, colorScheme }: { title: string; children: React.ReactNode; colorScheme: 'light' | 'dark' }) {
+function Section({
+  title,
+  children,
+  colorScheme,
+}: {
+  title: string;
+  children: React.ReactNode;
+  colorScheme: 'light' | 'dark';
+}) {
   const isDark = colorScheme === 'dark';
   const cardBg = isDark ? '#1C1C1E' : '#FFFFFF';
   const dividerColor = isDark ? '#38383A' : '#E5E5EA';
@@ -321,14 +580,20 @@ function Section({ title, children, colorScheme }: { title: string; children: Re
 
   return (
     <RNView style={styles.section}>
-      <Text style={styles.sectionTitle} type="secondary">{title}</Text>
+      <Text style={styles.sectionTitle} type="secondary">
+        {title}
+      </Text>
       <RNView style={[styles.sectionContent, { backgroundColor: cardBg }]}>
         {childArray.map((child, index) => {
           const isLast = index === childArray.length - 1;
           return (
             <RNView key={index}>
               {child}
-              {!isLast && <RNView style={[styles.divider, { backgroundColor: dividerColor }]} />}
+              {!isLast && (
+                <RNView
+                  style={[styles.divider, { backgroundColor: dividerColor }]}
+                />
+              )}
             </RNView>
           );
         })}
@@ -352,7 +617,14 @@ function SettingItem({
     <RNView style={styles.settingItem}>
       <RNView style={styles.settingLabelContainer}>
         {icon && (
-          <RNView style={[styles.iconWrapper, { backgroundColor: colorScheme === 'dark' ? '#2C2C2E' : '#F2F2F7' }]}>
+          <RNView
+            style={[
+              styles.iconWrapper,
+              {
+                backgroundColor: colorScheme === 'dark' ? '#2C2C2E' : '#F2F2F7',
+              },
+            ]}
+          >
             <Ionicons name={icon} size={16} color={Colors[colorScheme].text} />
           </RNView>
         )}
@@ -367,41 +639,73 @@ function SettingItem({
 
 function hexToHsl(hex: string) {
   let cleanHex = hex.replace('#', '');
-  if (cleanHex.length === 3) cleanHex = cleanHex.split('').map((x) => x + x).join('');
+  if (cleanHex.length === 3)
+    cleanHex = cleanHex
+      .split('')
+      .map((x) => x + x)
+      .join('');
   if (cleanHex.length !== 6) return { h: 211, s: 100, l: 50 };
   const r = parseInt(cleanHex.substring(0, 2), 16) / 255;
   const g = parseInt(cleanHex.substring(2, 4), 16) / 255;
   const b = parseInt(cleanHex.substring(4, 6), 16) / 255;
 
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  let h = 0, s = 0;
+  const max = Math.max(r, g, b),
+    min = Math.min(r, g, b);
+  let h = 0,
+    s = 0;
   const l = (max + min) / 2;
 
   if (max !== min) {
     const d = max - min;
     s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
     switch (max) {
-      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-      case g: h = (b - r) / d + 2; break;
-      case b: h = (r - g) / d + 4; break;
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      case b:
+        h = (r - g) / d + 4;
+        break;
     }
     h /= 6;
   }
-  return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+  return {
+    h: Math.round(h * 360),
+    s: Math.round(s * 100),
+    l: Math.round(l * 100),
+  };
 }
 
 function hslToHex(h: number, s: number, l: number) {
-  const sFrac = s / 100, lFrac = l / 100;
+  const sFrac = s / 100,
+    lFrac = l / 100;
   const c = (1 - Math.abs(2 * lFrac - 1)) * sFrac;
   const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
   const m = lFrac - c / 2;
-  let r = 0, g = 0, b = 0;
-  if (0 <= h && h < 60) { r = c; g = x; }
-  else if (60 <= h && h < 120) { r = x; g = c; }
-  else if (120 <= h && h < 180) { g = c; b = x; }
-  else if (180 <= h && h < 240) { g = x; b = c; }
-  else if (240 <= h && h < 300) { r = x; b = c; }
-  else if (300 <= h && h < 360) { r = c; b = x; }
+  let r = 0,
+    g = 0,
+    b = 0;
+  if (0 <= h && h < 60) {
+    r = c;
+    g = x;
+  } else if (60 <= h && h < 120) {
+    r = x;
+    g = c;
+  } else if (120 <= h && h < 180) {
+    g = c;
+    b = x;
+  } else if (180 <= h && h < 240) {
+    g = x;
+    b = c;
+  } else if (240 <= h && h < 300) {
+    r = x;
+    b = c;
+  } else if (300 <= h && h < 360) {
+    r = c;
+    b = x;
+  }
 
   const toHex = (val: number) => {
     const s = Math.round((val + m) * 255).toString(16);
@@ -412,7 +716,15 @@ function hslToHex(h: number, s: number, l: number) {
 
 // ================= Custom Sliders =================
 
-function HslSlider({ value, min, max, thumbColor, gradientColors, onChange, onComplete }: any) {
+function HslSlider({
+  value,
+  min,
+  max,
+  thumbColor,
+  gradientColors,
+  onChange,
+  onComplete,
+}: any) {
   const [trackWidth, setTrackWidth] = useState(0);
   const viewRef = useRef<any>(null);
   const trackWidthRef = useRef(0);
@@ -428,11 +740,13 @@ function HslSlider({ value, min, max, thumbColor, gradientColors, onChange, onCo
   maxRef.current = max;
 
   const measureTrack = () => {
-    viewRef.current?.measure((_x: number, _y: number, width: number, _h: number, pageX: number) => {
-      trackWidthRef.current = width;
-      trackPageXRef.current = pageX;
-      setTrackWidth(width);
-    });
+    viewRef.current?.measure(
+      (_x: number, _y: number, width: number, _h: number, pageX: number) => {
+        trackWidthRef.current = width;
+        trackPageXRef.current = pageX;
+        setTrackWidth(width);
+      },
+    );
   };
 
   const computeValue = (pageX: number) => {
@@ -445,21 +759,36 @@ function HslSlider({ value, min, max, thumbColor, gradientColors, onChange, onCo
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: (evt) => onChangeRef.current(computeValue(evt.nativeEvent.pageX)),
-      onPanResponderMove: (evt) => onChangeRef.current(computeValue(evt.nativeEvent.pageX)),
+      onPanResponderGrant: (evt) =>
+        onChangeRef.current(computeValue(evt.nativeEvent.pageX)),
+      onPanResponderMove: (evt) =>
+        onChangeRef.current(computeValue(evt.nativeEvent.pageX)),
       onPanResponderRelease: (evt) => {
         const finalVal = computeValue(evt.nativeEvent.pageX);
         onChangeRef.current(finalVal);
         onCompleteRef.current?.(finalVal);
       },
-    })
+    }),
   ).current;
 
-  const ratio = trackWidth > 0 ? Math.max(0, Math.min(1, (value - min) / (max - min))) : 0;
+  const ratio =
+    trackWidth > 0 ? Math.max(0, Math.min(1, (value - min) / (max - min))) : 0;
 
   return (
-    <RNView ref={viewRef} style={{ height: 32, justifyContent: 'center' }} onLayout={measureTrack} {...panResponder.panHandlers}>
-      <RNView style={{ height: 8, borderRadius: 4, overflow: 'hidden', flexDirection: 'row' }}>
+    <RNView
+      ref={viewRef}
+      style={{ height: 32, justifyContent: 'center' }}
+      onLayout={measureTrack}
+      {...panResponder.panHandlers}
+    >
+      <RNView
+        style={{
+          height: 8,
+          borderRadius: 4,
+          overflow: 'hidden',
+          flexDirection: 'row',
+        }}
+      >
         {gradientColors.map((color: string, i: number) => (
           <RNView key={i} style={{ flex: 1, backgroundColor: color }} />
         ))}
@@ -517,16 +846,48 @@ function ColorPickerSection({ primaryColor, onColorChange }: any) {
   };
 
   const previewColor = hslToHex(hsl.h, hsl.s, hsl.l);
-  const hueGradient = Array.from({ length: 36 }, (_, i) => `hsl(${i * 10}, 100%, 50%)`);
-  const satGradient = Array.from({ length: 10 }, (_, i) => `hsl(${hsl.h}, ${i * 11}%, ${hsl.l}%)`);
-  const litGradient = Array.from({ length: 10 }, (_, i) => `hsl(${hsl.h}, ${hsl.s}%, ${i * 11}%)`);
+  const hueGradient = Array.from(
+    { length: 36 },
+    (_, i) => `hsl(${i * 10}, 100%, 50%)`,
+  );
+  const satGradient = Array.from(
+    { length: 10 },
+    (_, i) => `hsl(${hsl.h}, ${i * 11}%, ${hsl.l}%)`,
+  );
+  const litGradient = Array.from(
+    { length: 10 },
+    (_, i) => `hsl(${hsl.h}, ${hsl.s}%, ${i * 11}%)`,
+  );
 
   return (
-    <RNView style={{ padding: 16, paddingTop: 8, gap: 16, backgroundColor: colorScheme === 'dark' ? '#141415' : '#FAFAFA' }}>
+    <RNView
+      style={{
+        padding: 16,
+        paddingTop: 8,
+        gap: 16,
+        backgroundColor: colorScheme === 'dark' ? '#141415' : '#FAFAFA',
+      }}
+    >
       <RNView style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <RNView style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: primaryColor || previewColor, borderWidth: 1, borderColor: borderColor }} />
+        <RNView
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: primaryColor || previewColor,
+            borderWidth: 1,
+            borderColor: borderColor,
+          }}
+        />
         <TextInput
-          style={[styles.hexInput, { color: textColor, borderColor: borderColor, backgroundColor: Colors[colorScheme].backgroundTertiary }]}
+          style={[
+            styles.hexInput,
+            {
+              color: textColor,
+              borderColor: borderColor,
+              backgroundColor: Colors[colorScheme].backgroundTertiary,
+            },
+          ]}
           placeholder="#0084ff"
           placeholderTextColor="#999"
           value={hexText}
@@ -538,7 +899,9 @@ function ColorPickerSection({ primaryColor, onColorChange }: any) {
               setHsl(hexToHsl(v));
             }
           }}
-          onBlur={() => { if (hexText.length !== 7) setHexText(primaryColor || '#0084ff'); }}
+          onBlur={() => {
+            if (hexText.length !== 7) setHexText(primaryColor || '#0084ff');
+          }}
           maxLength={7}
           autoCapitalize="none"
           autoCorrect={false}
@@ -546,16 +909,46 @@ function ColorPickerSection({ primaryColor, onColorChange }: any) {
       </RNView>
 
       <RNView style={{ gap: 2 }}>
-        <Text style={{ fontSize: 13, fontWeight: '500' }}>色相 (Hue) {hsl.h}°</Text>
-        <HslSlider value={hsl.h} min={0} max={359} thumbColor={previewColor} gradientColors={hueGradient} onChange={(v: any) => applyHslLocal({ ...hsl, h: v })} onComplete={(v: any) => applyHslComplete({ ...hsl, h: v })} />
+        <Text style={{ fontSize: 13, fontWeight: '500' }}>
+          色相 (Hue) {hsl.h}°
+        </Text>
+        <HslSlider
+          value={hsl.h}
+          min={0}
+          max={359}
+          thumbColor={previewColor}
+          gradientColors={hueGradient}
+          onChange={(v: any) => applyHslLocal({ ...hsl, h: v })}
+          onComplete={(v: any) => applyHslComplete({ ...hsl, h: v })}
+        />
       </RNView>
       <RNView style={{ gap: 2 }}>
-        <Text style={{ fontSize: 13, fontWeight: '500' }}>饱和度 (Saturation) {hsl.s}%</Text>
-        <HslSlider value={hsl.s} min={10} max={100} thumbColor={previewColor} gradientColors={satGradient} onChange={(v: any) => applyHslLocal({ ...hsl, s: v })} onComplete={(v: any) => applyHslComplete({ ...hsl, s: v })} />
+        <Text style={{ fontSize: 13, fontWeight: '500' }}>
+          饱和度 (Saturation) {hsl.s}%
+        </Text>
+        <HslSlider
+          value={hsl.s}
+          min={10}
+          max={100}
+          thumbColor={previewColor}
+          gradientColors={satGradient}
+          onChange={(v: any) => applyHslLocal({ ...hsl, s: v })}
+          onComplete={(v: any) => applyHslComplete({ ...hsl, s: v })}
+        />
       </RNView>
       <RNView style={{ gap: 2 }}>
-        <Text style={{ fontSize: 13, fontWeight: '500' }}>亮度 (Lightness) {hsl.l}%</Text>
-        <HslSlider value={hsl.l} min={10} max={90} thumbColor={previewColor} gradientColors={litGradient} onChange={(v: any) => applyHslLocal({ ...hsl, l: v })} onComplete={(v: any) => applyHslComplete({ ...hsl, l: v })} />
+        <Text style={{ fontSize: 13, fontWeight: '500' }}>
+          亮度 (Lightness) {hsl.l}%
+        </Text>
+        <HslSlider
+          value={hsl.l}
+          min={10}
+          max={90}
+          thumbColor={previewColor}
+          gradientColors={litGradient}
+          onChange={(v: any) => applyHslLocal({ ...hsl, l: v })}
+          onComplete={(v: any) => applyHslComplete({ ...hsl, l: v })}
+        />
       </RNView>
     </RNView>
   );

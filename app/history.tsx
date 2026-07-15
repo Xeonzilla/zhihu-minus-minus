@@ -1,6 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { Stack, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable } from 'react-native';
@@ -62,7 +66,9 @@ export default function HistoryScreen() {
   };
 
   const deleteMutation = useMutation({
-    mutationFn: async (pairs: { content_token: string; content_type: ReadHistoryContentType }[]) => {
+    mutationFn: async (
+      pairs: { content_token: string; content_type: ReadHistoryContentType }[],
+    ) => {
       await batchDelReadHistory({ pairs, clear: false });
     },
     onSuccess: () => {
@@ -83,20 +89,34 @@ export default function HistoryScreen() {
   const handleClearAll = () => {
     Alert.alert('清空全部记录', '确定要清空所有浏览历史吗？此操作不可撤销。', [
       { text: '取消', style: 'cancel' },
-      { text: '清空', style: 'destructive', onPress: () => clearAllMutation.mutate() },
+      {
+        text: '清空',
+        style: 'destructive',
+        onPress: () => clearAllMutation.mutate(),
+      },
     ]);
   };
 
   const handleDeleteSelected = () => {
     if (selectedIds.size === 0) return;
-    const pairs: { content_token: string; content_type: ReadHistoryContentType }[] = [];
+    const pairs: {
+      content_token: string;
+      content_type: ReadHistoryContentType;
+    }[] = [];
     for (const key of selectedIds) {
       const [type, token] = key.split('-');
-      pairs.push({ content_token: token, content_type: type as ReadHistoryContentType });
+      pairs.push({
+        content_token: token,
+        content_type: type as ReadHistoryContentType,
+      });
     }
     Alert.alert('删除选中记录', `确定要删除选中的 ${pairs.length} 条记录吗？`, [
       { text: '取消', style: 'cancel' },
-      { text: '删除', style: 'destructive', onPress: () => deleteMutation.mutate(pairs) },
+      {
+        text: '删除',
+        style: 'destructive',
+        onPress: () => deleteMutation.mutate(pairs),
+      },
     ]);
   };
 
@@ -145,7 +165,10 @@ export default function HistoryScreen() {
         onPress={() => onPressItem(item)}
         onLongPress={handleLongPress}
       >
-        <View type="surface" className="p-[15px] mb-0.5 mt-px flex-row items-start">
+        <View
+          type="surface"
+          className="p-[15px] mb-0.5 mt-px flex-row items-start"
+        >
           {selecting && (
             <View className="mr-3 mt-0.5 bg-transparent">
               <Ionicons

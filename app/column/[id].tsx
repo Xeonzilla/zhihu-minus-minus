@@ -36,9 +36,7 @@ export default function ColumnDetail() {
     queryFn: () => getColumn(id),
   });
 
-  const enableBrowseHistory = useSettingsStore(
-    (s) => s.enableBrowseHistory,
-  );
+  const enableBrowseHistory = useSettingsStore((s) => s.enableBrowseHistory);
 
   useEffect(() => {
     if (enableBrowseHistory && column?.id) {

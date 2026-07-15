@@ -451,7 +451,10 @@ const AnswerItem = forwardRef(
               style={{ position: 'relative' }}
             >
               <Reanimated.View
-                style={[animatedContentStyle, { overflow: 'hidden', alignSelf: 'stretch' }]}
+                style={[
+                  animatedContentStyle,
+                  { overflow: 'hidden', alignSelf: 'stretch' },
+                ]}
                 className="bg-transparent"
               >
                 <View
@@ -749,9 +752,7 @@ export default function QuestionDetail() {
     });
   }, [answersData]);
 
-  const enableBrowseHistory = useSettingsStore(
-    (s) => s.enableBrowseHistory,
-  );
+  const enableBrowseHistory = useSettingsStore((s) => s.enableBrowseHistory);
 
   const recordedAnswerIds = useRef(new Set<string>());
 
@@ -772,7 +773,11 @@ export default function QuestionDetail() {
         return next;
       });
 
-      if (expanded && enableBrowseHistory && !recordedAnswerIds.current.has(id)) {
+      if (
+        expanded &&
+        enableBrowseHistory &&
+        !recordedAnswerIds.current.has(id)
+      ) {
         recordedAnswerIds.current.add(id);
         addReadHistory({ content_token: id, content_type: 'answer' });
       }
@@ -1136,12 +1141,12 @@ export default function QuestionDetail() {
         data={
           selectedAnswer
             ? {
-              id: selectedAnswer.id,
-              title: question?.title,
-              author: selectedAnswer.author?.name,
-              authorHeadline: selectedAnswer.author?.headline,
-              url: getShareLink(selectedAnswer),
-            }
+                id: selectedAnswer.id,
+                title: question?.title,
+                author: selectedAnswer.author?.name,
+                authorHeadline: selectedAnswer.author?.headline,
+                url: getShareLink(selectedAnswer),
+              }
             : null
         }
       />

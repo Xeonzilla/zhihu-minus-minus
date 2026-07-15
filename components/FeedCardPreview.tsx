@@ -1,0 +1,130 @@
+import { useQuery } from '@tanstack/react-query';
+import { ActivityIndicator, Image, ScrollView, StyleSheet } from 'react-native';
+import {
+  type FeedItem,
+  getAnswer,
+  getArticle,
+  getPin,
+  getQuestion,
+} from '@/api/zhihu';
+import { useColorScheme } from '@/components/useColorScheme';
+import Colors from '@/constants/Colors';
+import { Text, View } from './Themed';
+import { ZhihuContent } from './ZhihuContent';
+
+interface FeedCardPreviewProps {
+  item: FeedItem;
+}
+
+export function FeedCardPreview({ item }: FeedCardPreviewProps) {
+  const colorScheme = useColorScheme();
+  const typeKey =
+    item.type === 'answers'
+      ? 'answer'
+      : item.type === 'articles'
+        ? 'article'
+        : item.type === 'pins'
+          ? 'pin'
+          : 'question';
+
+  const { data: fullData, isLoading } = useQuery({
+    queryKey: ['feed-card-preview', typeKey, item.id],
+    queryFn: async () => {
+      if (item.type === 'answers') {
+        return getAnswer(item.id);
+      }
+      if (item.type === 'articles') {
+        return getArticle(item.id);
+      }
+      if (item.type === 'pins') {
+        return getPin(item.id);
+      }
+      if (item.type === 'questions') {
+        return getQuestion(item.id);
+      }
+      return null;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  return (
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: Colors[colorScheme].backgroundSecondary,
+        },
+      ]}
+    >
+      {/* Author Profile */}
+      <View className="flex-row items-center mb-3 bg-transparent">
+        <Image
+          source={{ uri: item.author.avatar }}
+          className="w-7 h-7 rounded-full"
+        />
+        <View className="ml-2 bg-transparent flex-1">
+          <Text className="text-sm font-bold text-foreground dark:text-foreground-dark">
+            {item.author.name}
+          </Text>
+          {item.author.headline ? (
+            <Text
+              numberOfLines={1}
+              className="text-[11px] text-tertiary dark:text-tertiary-dark mt-0.5"
+            >
+              {item.author.headline}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+
+      {/* Content Title */}
+      {item.title ? (
+        <Text
+          numberOfLines={2}
+          className="text-base font-bold mb-2.5 text-foreground dark:text-foreground-dark leading-6"
+        >
+          {item.title}
+        </Text>
+      ) : null}
+
+      {/* Scrollable Content Body */}
+      <ScrollView
+        style={styles.scrollContainer}
+        showsVerticalScrollIndicator={true}
+      >
+        {isLoading ? (
+          <View className="py-10 justify-center items-center bg-transparent">
+            <ActivityIndicator size="small" color="#0084ff" />
+            <Text className="mt-2 text-xs opacity-60">正在获取完整内容...</Text>
+          </View>
+        ) : (
+          <View className="bg-transparent mb-2">
+            <ZhihuContent
+              content={fullData?.content}
+              contentArray={
+                item.type === 'pins' && Array.isArray(fullData?.content)
+                  ? fullData.content
+                  : undefined
+              }
+              objectId={item.id}
+              type={typeKey}
+              useNative={true}
+            />
+          </View>
+        )}
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    width: 320,
+    maxHeight: 450,
+    padding: 16,
+    borderRadius: 16,
+  },
+  scrollContainer: {
+    maxHeight: 330,
+  },
+});

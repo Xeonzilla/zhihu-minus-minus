@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import React, { useEffect } from 'react';
 import { Animated, Modal, Pressable, StyleSheet } from 'react-native';
-import { Text, View, ThemedIcon, useThemeColor } from './Themed';
+import { Text, ThemedIcon, useThemeColor, View } from './Themed';
 import { useColorScheme } from './useColorScheme';
 
 export function ClipboardLinkModal({

@@ -164,7 +164,17 @@ export default React.memo(function ZhihuDOMContent({
             const textNode = document.createTextNode(textContent);
             img.parentNode?.replaceChild(textNode, img);
           } else if (!isFormula) {
-            let actualSrc = img.getAttribute('data-actualsrc') || img.getAttribute('data-original') || src;
+            const originalToken = img.getAttribute('data-original-token');
+            let actualSrc = img.getAttribute('data-original') || img.getAttribute('data-actualsrc') || src;
+
+            if (actualSrc && originalToken) {
+              const cleanToken = originalToken.trim();
+              const tokenRegex = /v2-[a-fA-F0-9]{32}/;
+              if (tokenRegex.test(actualSrc)) {
+                actualSrc = actualSrc.replace(tokenRegex, cleanToken);
+              }
+            }
+
             if (actualSrc) {
               actualSrc = actualSrc.trim();
               if (actualSrc.startsWith('//')) actualSrc = 'https:' + actualSrc;

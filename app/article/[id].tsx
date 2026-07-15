@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArticle, getDailyDetail } from '@/api/zhihu';
-import { addReadHistory } from '@/api/zhihu/history';
 import {
   fastCollectArticle,
   getArticleCollectionStatus,
@@ -24,6 +23,7 @@ import {
   getArticleColumnCard,
   unfollowColumn,
 } from '@/api/zhihu/column';
+import { addReadHistory } from '@/api/zhihu/history';
 import { followMember, unfollowMember } from '@/api/zhihu/member';
 import { DownvoteButton } from '@/components/DownvoteButton';
 import { LikeButton } from '@/components/LikeButton';
@@ -74,9 +74,7 @@ export default function ArticleDetail() {
   const isLoading = isDaily ? dailyLoading : zhihuLoading;
   const data = isDaily ? dailyData : zhihuData;
 
-  const enableBrowseHistory = useSettingsStore(
-    (s) => s.enableBrowseHistory,
-  );
+  const enableBrowseHistory = useSettingsStore((s) => s.enableBrowseHistory);
 
   useEffect(() => {
     if (enableBrowseHistory && id) {

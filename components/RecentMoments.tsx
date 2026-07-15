@@ -4,7 +4,7 @@ import React from 'react';
 import { Image, Pressable, ScrollView } from 'react-native';
 import { fetchRecentMoments } from '@/api/zhihu';
 import Colors from '@/constants/Colors';
-import { Text, View, useThemeColor } from './Themed';
+import { Text, useThemeColor, View } from './Themed';
 import { useColorScheme } from './useColorScheme';
 
 /**
@@ -54,9 +54,7 @@ export function RecentMoments() {
                 className="p-[2px] rounded-full border-[1.5px]"
                 style={{
                   borderColor:
-                    item.unread_count > 0
-                      ? primaryColor
-                      : 'transparent',
+                    item.unread_count > 0 ? primaryColor : 'transparent',
                 }}
               >
                 <Image

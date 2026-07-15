@@ -1,7 +1,10 @@
 import { Platform, ToastAndroid } from 'react-native';
 import Toast from 'react-native-root-toast';
 
-export const showToast = (message: string, duration: 'short' | 'long' = 'short') => {
+export const showToast = (
+  message: string,
+  duration: 'short' | 'long' = 'short',
+) => {
   if (Platform.OS === 'android') {
     ToastAndroid.show(
       message,
@@ -9,7 +12,8 @@ export const showToast = (message: string, duration: 'short' | 'long' = 'short')
     );
   } else {
     Toast.show(message, {
-      duration: duration === 'short' ? Toast.durations.SHORT : Toast.durations.LONG,
+      duration:
+        duration === 'short' ? Toast.durations.SHORT : Toast.durations.LONG,
       position: -80, // 距离底部 80pt，避开 tab bar
       shadow: false,
       animation: true,

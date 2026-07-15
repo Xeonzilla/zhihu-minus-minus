@@ -5,7 +5,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { useCollectionStore } from '@/store/useCollectionStore';
 import { BouncyButton } from './BouncyButton';
-import { Text, View, useThemeColor } from './Themed';
+import { Text, useThemeColor, View } from './Themed';
 
 export function CollectionToastOverlay() {
   const {

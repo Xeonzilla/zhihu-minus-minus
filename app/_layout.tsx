@@ -45,7 +45,14 @@ const deviceContext = {
 };
 Sentry.setContext('device', deviceContext);
 Sentry.setTag('app_version', deviceContext.appVersion || 'unknown');
-Sentry.setTag('platform', deviceContext.platform?.ios ? 'ios' : deviceContext.platform?.android ? 'android' : 'other');
+Sentry.setTag(
+  'platform',
+  deviceContext.platform?.ios
+    ? 'ios'
+    : deviceContext.platform?.android
+      ? 'android'
+      : 'other',
+);
 
 // 保持启动页显示，直到资源加载完成
 SplashScreen.preventAutoHideAsync();

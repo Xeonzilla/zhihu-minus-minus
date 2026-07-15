@@ -8,7 +8,7 @@ import {
 } from '@tanstack/react-query';
 import { BlurView } from 'expo-blur';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo, useRef, useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -33,8 +33,8 @@ import { LikeButton } from '@/components/LikeButton';
 import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import { formatDate } from '@/utils/date';
 import { copyToClipboard } from '@/utils/clipboard';
+import { formatDate } from '@/utils/date';
 import { showToast } from '@/utils/toast';
 
 export default function ReplyDetailScreen() {
@@ -179,101 +179,101 @@ export default function ReplyDetailScreen() {
   const renderReply = ({ item }: { item: CommentItem }) => {
     return (
       <BouncyButton
-        onLongPress={() => handleLongPressComment(item.content, item.author.member.name)}
+        onLongPress={() =>
+          handleLongPressComment(item.content, item.author.member.name)
+        }
         delayLongPress={400}
         style={{
           borderBottomWidth: StyleSheet.hairlineWidth,
           borderBottomColor: borderColor,
         }}
       >
-        <View
-          className="flex-row p-[15px] bg-transparent"
-        >
-        <BouncyButton
-          onPress={() =>
-            goToProfile(item.author.member.url_token || item.author.member.id)
-          }
-          style={{ borderRadius: 16 }}
-        >
-          <Image
-            source={{ uri: item.author.member.avatar_url }}
-            className="w-8 h-8 rounded-full"
-          />
-        </BouncyButton>
-        <View type="secondary" className="flex-1 ml-3 bg-transparent">
-          <Text className="font-semibold text-[13px] mb-1">
-            <Text
-              onPress={() =>
-                goToProfile(
-                  item.author.member.url_token || item.author.member.id,
-                )
-              }
-            >
-              {item.author.member.name}
-            </Text>
-            {item.reply_to_author && (
-              <Text type="secondary">
-                {' '}
-                回复{' '}
-                <Text
-                  type="primary"
-                  onPress={() =>
-                    goToProfile(
-                      item.reply_to_author?.member.url_token ||
-                      item.reply_to_author?.member.id ||
-                      0,
-                    )
-                  }
-                >
-                  {item.reply_to_author?.member.name}
-                </Text>
-              </Text>
-            )}
-          </Text>
-          <View className="mt-1 bg-transparent">
-            <CommentContent htmlContent={item.content} width={contentWidth} />
-          </View>
-
-          <View className="flex-row justify-between items-center bg-transparent">
-            <Text
-              style={{
-                fontSize: 12,
-                color: Colors[colorScheme].textSecondary,
-                opacity: 0.65,
-              }}
-            >
-              {[
-                item.created_time ? formatDate(item.created_time) : null,
-                item.address_text ? item.address_text : null,
-              ]
-                .filter(Boolean)
-                .join('  ·  ')}
-            </Text>
-            <View className="flex-row items-center bg-transparent">
-              <LikeButton
-                id={item.id}
-                count={item.vote_count || 0}
-                voted={item.relationship?.voting || 0}
-                type="comments"
-                variant="ghost"
-              />
-              <BouncyButton
-                onPress={() => {
-                  setReplyTo({
-                    id: item.id as string,
-                    name: item.author.member.name,
-                  });
-                  inputRef.current?.focus();
-                }}
-                style={{ marginLeft: 15, borderRadius: 4 }}
+        <View className="flex-row p-[15px] bg-transparent">
+          <BouncyButton
+            onPress={() =>
+              goToProfile(item.author.member.url_token || item.author.member.id)
+            }
+            style={{ borderRadius: 16 }}
+          >
+            <Image
+              source={{ uri: item.author.member.avatar_url }}
+              className="w-8 h-8 rounded-full"
+            />
+          </BouncyButton>
+          <View type="secondary" className="flex-1 ml-3 bg-transparent">
+            <Text className="font-semibold text-[13px] mb-1">
+              <Text
+                onPress={() =>
+                  goToProfile(
+                    item.author.member.url_token || item.author.member.id,
+                  )
+                }
               >
-                <Text type="secondary" className="text-xs font-medium py-1">
-                  回复
+                {item.author.member.name}
+              </Text>
+              {item.reply_to_author && (
+                <Text type="secondary">
+                  {' '}
+                  回复{' '}
+                  <Text
+                    type="primary"
+                    onPress={() =>
+                      goToProfile(
+                        item.reply_to_author?.member.url_token ||
+                          item.reply_to_author?.member.id ||
+                          0,
+                      )
+                    }
+                  >
+                    {item.reply_to_author?.member.name}
+                  </Text>
                 </Text>
-              </BouncyButton>
+              )}
+            </Text>
+            <View className="mt-1 bg-transparent">
+              <CommentContent htmlContent={item.content} width={contentWidth} />
+            </View>
+
+            <View className="flex-row justify-between items-center bg-transparent">
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: Colors[colorScheme].textSecondary,
+                  opacity: 0.65,
+                }}
+              >
+                {[
+                  item.created_time ? formatDate(item.created_time) : null,
+                  item.address_text ? item.address_text : null,
+                ]
+                  .filter(Boolean)
+                  .join('  ·  ')}
+              </Text>
+              <View className="flex-row items-center bg-transparent">
+                <LikeButton
+                  id={item.id}
+                  count={item.vote_count || 0}
+                  voted={item.relationship?.voting || 0}
+                  type="comments"
+                  variant="ghost"
+                />
+                <BouncyButton
+                  onPress={() => {
+                    setReplyTo({
+                      id: item.id as string,
+                      name: item.author.member.name,
+                    });
+                    inputRef.current?.focus();
+                  }}
+                  style={{ marginLeft: 15, borderRadius: 4 }}
+                >
+                  <Text type="secondary" className="text-xs font-medium py-1">
+                    回复
+                  </Text>
+                </BouncyButton>
+              </View>
             </View>
           </View>
-        </View>
         </View>
       </BouncyButton>
     );
@@ -293,7 +293,7 @@ export default function ReplyDetailScreen() {
             onPress={() =>
               goToProfile(
                 parentComment.author.member.url_token ||
-                parentComment.author.member.id,
+                  parentComment.author.member.id,
               )
             }
             style={{ borderRadius: 18 }}
@@ -310,7 +310,7 @@ export default function ReplyDetailScreen() {
                 onPress={() =>
                   goToProfile(
                     parentComment.author.member.url_token ||
-                    parentComment.author.member.id,
+                      parentComment.author.member.id,
                   )
                 }
               >
@@ -318,7 +318,10 @@ export default function ReplyDetailScreen() {
               </Text>
             </View>
             <View className="mt-1 bg-transparent">
-              <CommentContent htmlContent={parentComment.content} width={contentWidth} />
+              <CommentContent
+                htmlContent={parentComment.content}
+                width={contentWidth}
+              />
             </View>
 
             <View className="flex-row justify-between items-center bg-transparent">
@@ -333,7 +336,9 @@ export default function ReplyDetailScreen() {
                   parentComment.created_time
                     ? formatDate(parentComment.created_time)
                     : null,
-                  parentComment.address_text ? parentComment.address_text : null,
+                  parentComment.address_text
+                    ? parentComment.address_text
+                    : null,
                 ]
                   .filter(Boolean)
                   .join('  ·  ')}
@@ -455,7 +460,10 @@ export default function ReplyDetailScreen() {
               <Text type="secondary" className="text-xs">
                 正在回复 {replyTo.name}
               </Text>
-              <BouncyButton onPress={() => setReplyTo(null)} style={{ borderRadius: 8 }}>
+              <BouncyButton
+                onPress={() => setReplyTo(null)}
+                style={{ borderRadius: 8 }}
+              >
                 <Ionicons
                   name="close-circle"
                   size={16}
@@ -481,7 +489,12 @@ export default function ReplyDetailScreen() {
             <BouncyButton
               disabled={!inputText.trim() || mutation.isPending}
               onPress={() => mutation.mutate(inputText.trim())}
-              style={{ height: 40, justifyContent: 'center', paddingHorizontal: 15, borderRadius: 20 }}
+              style={{
+                height: 40,
+                justifyContent: 'center',
+                paddingHorizontal: 15,
+                borderRadius: 20,
+              }}
             >
               {mutation.isPending ? (
                 <ActivityIndicator size="small" color={tintColor} />

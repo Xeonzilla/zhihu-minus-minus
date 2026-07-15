@@ -16,7 +16,7 @@ import { getAnswer } from '@/api/zhihu';
 import { addReadHistory } from '@/api/zhihu/history';
 import { AnswerDetailView } from '@/components/AnswerDetailView';
 import { ShareMenu } from '@/components/ShareMenu';
-import { Text, View, useThemeColor } from '@/components/Themed';
+import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { useZhihuInfiniteQuery } from '@/hooks/useZhihuInfiniteQuery';
@@ -41,9 +41,7 @@ export default function AnswerDetailScreen() {
   // 锁定初始 ID，避免滑动时 URL 参数改变导致重新触发 top-level loading
   const [initialId] = useState(id as string);
 
-  const enableBrowseHistory = useSettingsStore(
-    (s) => s.enableBrowseHistory,
-  );
+  const enableBrowseHistory = useSettingsStore((s) => s.enableBrowseHistory);
 
   const recordedIds = useRef(new Set<string>());
 
@@ -147,7 +145,11 @@ export default function AnswerDetailScreen() {
   const currentId = answerIds[currentPage];
 
   useEffect(() => {
-    if (enableBrowseHistory && currentId && !recordedIds.current.has(currentId)) {
+    if (
+      enableBrowseHistory &&
+      currentId &&
+      !recordedIds.current.has(currentId)
+    ) {
       addReadHistory({ content_token: currentId, content_type: 'answer' });
       recordedIds.current.add(currentId);
     }

@@ -4,7 +4,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator } from 'react-native';
 import { getMemberMutual } from '@/api/zhihu';
-import { Text, View, useThemeColor } from '@/components/Themed';
+import { Text, useThemeColor, View } from '@/components/Themed';
 import { UserCard } from '@/components/UserCard';
 
 export default function MutualFollowersScreen() {

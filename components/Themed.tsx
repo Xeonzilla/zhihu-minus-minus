@@ -7,13 +7,14 @@
  *
  * New components can use plain RN <Text>/<View> with className directly.
  */
+
+import { Ionicons } from '@expo/vector-icons';
 import {
   Text as DefaultText,
   View as DefaultView,
   StyleSheet,
   type TextStyle,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useColorScheme } from './useColorScheme';
@@ -208,7 +209,14 @@ export function ThemedIcon(
     darkColor?: string;
   },
 ) {
-  const { colorType = 'default', lightColor, darkColor, name, size = 24, ...otherProps } = props;
+  const {
+    colorType = 'default',
+    lightColor,
+    darkColor,
+    name,
+    size = 24,
+    ...otherProps
+  } = props;
 
   let colorName: keyof typeof Colors.light & keyof typeof Colors.dark = 'text';
   if (colorType === 'secondary') colorName = 'textSecondary';

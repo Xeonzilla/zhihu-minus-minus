@@ -1,13 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   ActivityIndicator,
+  Dimensions,
   Image,
   Linking,
   Modal,
   Pressable,
+  View as RNView,
   StyleSheet,
   TouchableWithoutFeedback,
   useWindowDimensions,
@@ -21,9 +29,9 @@ import RenderHtml, {
 import { SvgUri } from 'react-native-svg';
 import {
   createSegmentReaction,
+  getAnswer,
   reactAnswerSegment,
   unreactAnswerSegment,
-  getAnswer,
 } from '@/api/zhihu/answer';
 import { getArticle } from '@/api/zhihu/article';
 import { getPin } from '@/api/zhihu/pin';
@@ -38,7 +46,6 @@ import {
   parseZhihuUrl,
 } from '@/utils/url';
 import { BouncyButton } from './BouncyButton';
-import MathView from './MathView';
 import { Text, useThemeColor, View } from './Themed';
 import ZhihuDOMContent, { type TextSelectionInfo } from './ZhihuDOMContent';
 
@@ -80,141 +87,126 @@ export const LinkCard: React.FC<{
   onPress: (url: string) => void;
   surfaceColor: string;
   colorScheme: 'light' | 'dark';
-}> = React.memo(
-  ({
-    url,
-    title,
-    image,
-    onPress,
-    surfaceColor,
-    colorScheme,
-  }) => {
-    const isInternal = url.includes('zhihu.com');
-    const primaryColor = useThemeColor({}, 'primary');
+}> = React.memo(({ url, title, image, onPress, surfaceColor, colorScheme }) => {
+  const isInternal = url.includes('zhihu.com');
+  const primaryColor = useThemeColor({}, 'primary');
 
-    const parsedId = useMemo(() => {
-      if (!url) return null;
-      const m = url.match(/zhihu\.com\/question\/(\d+)\/answer\/(\d+)/);
-      if (m) return { type: 'answer' as const, id: m[2] };
-      const qm = url.match(/zhihu\.com\/question\/(\d+)/);
-      if (qm && !url.includes('/answer/')) return { type: 'question' as const, id: qm[1] };
-      const am = url.match(/zhuanlan\.zhihu\.com\/p\/(\d+)/);
-      if (am) return { type: 'article' as const, id: am[1] };
-      const pm = url.match(/zhihu\.com\/pin\/(\d+)/);
-      if (pm) return { type: 'pin' as const, id: pm[1] };
+  const parsedId = useMemo(() => {
+    if (!url) return null;
+    const m = url.match(/zhihu\.com\/question\/(\d+)\/answer\/(\d+)/);
+    if (m) return { type: 'answer' as const, id: m[2] };
+    const qm = url.match(/zhihu\.com\/question\/(\d+)/);
+    if (qm && !url.includes('/answer/'))
+      return { type: 'question' as const, id: qm[1] };
+    const am = url.match(/zhuanlan\.zhihu\.com\/p\/(\d+)/);
+    if (am) return { type: 'article' as const, id: am[1] };
+    const pm = url.match(/zhihu\.com\/pin\/(\d+)/);
+    if (pm) return { type: 'pin' as const, id: pm[1] };
+    return null;
+  }, [url]);
+
+  const { data: fetchedData } = useQuery({
+    queryKey: ['linkcard', parsedId?.type, parsedId?.id],
+    queryFn: async () => {
+      if (!parsedId) return null;
+      if (parsedId.type === 'answer') return getAnswer(parsedId.id);
+      if (parsedId.type === 'question') return getQuestion(parsedId.id);
+      if (parsedId.type === 'article') return getArticle(parsedId.id);
+      if (parsedId.type === 'pin') return getPin(parsedId.id);
       return null;
-    }, [url]);
+    },
+    enabled: !!parsedId && !title,
+    staleTime: 5 * 60 * 1000,
+  });
 
-    const { data: fetchedData } = useQuery({
-      queryKey: ['linkcard', parsedId?.type, parsedId?.id],
-      queryFn: async () => {
-        if (!parsedId) return null;
-        if (parsedId.type === 'answer') return getAnswer(parsedId.id);
-        if (parsedId.type === 'question') return getQuestion(parsedId.id);
-        if (parsedId.type === 'article') return getArticle(parsedId.id);
-        if (parsedId.type === 'pin') return getPin(parsedId.id);
-        return null;
-      },
-      enabled: !!parsedId && !title,
-      staleTime: 5 * 60 * 1000,
-    });
+  const fetchedTitle =
+    fetchedData?.question?.title ||
+    fetchedData?.title ||
+    fetchedData?.excerpt_title ||
+    title;
 
-    const fetchedTitle =
-      fetchedData?.question?.title ||
-      fetchedData?.title ||
-      fetchedData?.excerpt_title ||
-      title;
+  const fetchedImage =
+    image || fetchedData?.cover_url || fetchedData?.author?.avatar_url;
 
-    const fetchedImage =
-      image ||
-      fetchedData?.cover_url ||
-      fetchedData?.author?.avatar_url;
+  const fetchedSubtitle =
+    fetchedData?.author?.name || fetchedData?.question?.title || null;
 
-    const fetchedSubtitle =
-      fetchedData?.author?.name ||
-      fetchedData?.question?.title ||
-      null;
+  const fetchedStat =
+    fetchedData?.voteup_count != null
+      ? `${fetchedData.voteup_count} 赞同`
+      : fetchedData?.like_count != null
+        ? `${fetchedData.like_count} 喜欢`
+        : fetchedData?.answer_count != null
+          ? `${fetchedData.answer_count} 回答`
+          : null;
 
-    const fetchedStat =
-      fetchedData?.voteup_count != null
-        ? `${fetchedData.voteup_count} 赞同`
-        : fetchedData?.like_count != null
-          ? `${fetchedData.like_count} 喜欢`
-          : fetchedData?.answer_count != null
-            ? `${fetchedData.answer_count} 回答`
-            : null;
+  const getLinkTypeIcon = () => {
+    if (url.includes('/question/')) return 'help-circle';
+    if (url.includes('/answer/')) return 'chatbubble-ellipses';
+    if (url.includes('/pin/')) return 'navigate';
+    return 'link';
+  };
 
-    const getLinkTypeIcon = () => {
-      if (url.includes('/question/')) return 'help-circle';
-      if (url.includes('/answer/')) return 'chatbubble-ellipses';
-      if (url.includes('/pin/')) return 'navigate';
-      return 'link';
-    };
-
-    return (
-      <View className="w-full" style={{ overflow: 'visible' }}>
-        <BouncyButton
-          onPress={() => onPress(url)}
-          className="w-full p-3 rounded-xl my-3"
-          style={[
-            {
-              backgroundColor: surfaceColor,
-              borderWidth: StyleSheet.hairlineWidth,
-              borderColor: 'rgba(150,150,150,0.15)',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
-              shadowRadius: 4,
-              elevation: 2,
-            },
-          ]}
-        >
-          <View className="bg-transparent" pointerEvents="none">
-            {fetchedTitle ? (
-              <Text
-                className="text-[15px] font-bold leading-5 mb-1.5"
-                numberOfLines={2}
-              >
-                {fetchedTitle}
-              </Text>
-            ) : (
-              <Text
-                className="text-[14px] leading-5 mb-1.5"
-                numberOfLines={1}
-              >
-                {url}
-              </Text>
-            )}
-            {fetchedSubtitle && (
-              <Text type="secondary" className="text-xs mb-1" numberOfLines={1}>
-                {fetchedSubtitle}
-              </Text>
-            )}
-            <View className="flex-row items-center bg-transparent">
-              <Ionicons
-                name={getLinkTypeIcon() as any}
-                size={14}
-                color={primaryColor}
-              />
-              <Text type="secondary" className="text-xs ml-1">
-                {fetchedStat || (isInternal ? '知乎内容' : '外部链接')}
-              </Text>
-            </View>
-          </View>
-          {fetchedImage && (
-            <Image
-              source={{ uri: fetchedImage }}
-              className="w-full h-[120px] rounded-lg mt-2.5"
-              style={[
-                { backgroundColor: Colors[colorScheme].backgroundSecondary },
-              ]}
-            />
+  return (
+    <View className="w-full" style={{ overflow: 'visible' }}>
+      <BouncyButton
+        onPress={() => onPress(url)}
+        className="w-full p-3 rounded-xl my-3"
+        style={[
+          {
+            backgroundColor: surfaceColor,
+            borderWidth: StyleSheet.hairlineWidth,
+            borderColor: 'rgba(150,150,150,0.15)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.05,
+            shadowRadius: 4,
+            elevation: 2,
+          },
+        ]}
+      >
+        <View className="bg-transparent" pointerEvents="none">
+          {fetchedTitle ? (
+            <Text
+              className="text-[15px] font-bold leading-5 mb-1.5"
+              numberOfLines={2}
+            >
+              {fetchedTitle}
+            </Text>
+          ) : (
+            <Text className="text-[14px] leading-5 mb-1.5" numberOfLines={1}>
+              {url}
+            </Text>
           )}
-        </BouncyButton>
-      </View>
-    );
-  },
-);
+          {fetchedSubtitle && (
+            <Text type="secondary" className="text-xs mb-1" numberOfLines={1}>
+              {fetchedSubtitle}
+            </Text>
+          )}
+          <View className="flex-row items-center bg-transparent">
+            <Ionicons
+              name={getLinkTypeIcon() as any}
+              size={14}
+              color={primaryColor}
+            />
+            <Text type="secondary" className="text-xs ml-1">
+              {fetchedStat || (isInternal ? '知乎内容' : '外部链接')}
+            </Text>
+          </View>
+        </View>
+        {fetchedImage && (
+          <Image
+            source={{ uri: fetchedImage }}
+            className="w-full h-[120px] rounded-lg mt-2.5"
+            style={[
+              { backgroundColor: Colors[colorScheme].backgroundSecondary },
+            ]}
+          />
+        )}
+      </BouncyButton>
+    </View>
+  );
+});
 
 const P_Renderer: CustomBlockRenderer = ({ TDefaultRenderer, ...props }) => {
   const { tnode } = props;
@@ -270,6 +262,65 @@ const P_Renderer: CustomBlockRenderer = ({ TDefaultRenderer, ...props }) => {
     >
       {content}
     </Pressable>
+  );
+};
+
+const LazyImage: React.FC<{
+  src: string;
+  style: any;
+  resizeMode: 'contain' | 'cover' | 'stretch' | 'center';
+  resizeMethod?: 'auto' | 'resize' | 'scale';
+}> = ({ src, style, resizeMode, resizeMethod }) => {
+  const [visible, setVisible] = useState(false);
+  const containerRef = useRef<RNView>(null);
+  const timerRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (visible) return;
+
+    const checkVisibility = () => {
+      containerRef.current?.measureInWindow((_x, y, _width, height) => {
+        if (y === undefined) return;
+        const { height: screenHeight } = Dimensions.get('window');
+        // Load when it's within viewport + 400px scroll-ahead buffer
+        if (y < screenHeight + 400 && y + height > -400) {
+          setVisible(true);
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+        }
+      });
+    };
+
+    checkVisibility();
+    timerRef.current = setInterval(checkVisibility, 400);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [visible]);
+
+  return (
+    <RNView
+      ref={containerRef}
+      style={style}
+      className="rounded-xl bg-[rgba(150,150,150,0.06)] justify-center items-center overflow-hidden"
+    >
+      {visible ? (
+        <Image
+          source={{ uri: src }}
+          style={StyleSheet.absoluteFill}
+          resizeMode={resizeMode}
+          resizeMethod={resizeMethod}
+          className="rounded-xl"
+        />
+      ) : (
+        <ActivityIndicator size="small" color="#999" />
+      )}
+    </RNView>
   );
 };
 
@@ -384,11 +435,11 @@ const IMG_Renderer: CustomBlockRenderer = ({ tnode }) => {
             />
           )
         ) : (
-          <Image
-            source={{ uri: finalSrc }}
-            className="rounded-xl bg-[rgba(150,150,150,0.1)]"
+          <LazyImage
+            src={finalSrc}
             style={imageStyle}
             resizeMode="contain"
+            resizeMethod="resize"
           />
         )}
       </Pressable>
@@ -599,12 +650,21 @@ export const ZhihuContent: React.FC<ZhihuContentProps> = React.memo(
         onElement: (element: any) => {
           if (element.name === 'img') {
             const { attribs } = element;
-            const actualSrc = (
-              attribs['data-actualsrc'] ||
+            const originalToken = attribs['data-original-token']?.trim();
+            let actualSrc = (
               attribs['data-original'] ||
+              attribs['data-actualsrc'] ||
               attribs.src ||
               ''
             ).trim();
+
+            if (actualSrc && originalToken) {
+              const tokenRegex = /v2-[a-fA-F0-9]{32}/;
+              if (tokenRegex.test(actualSrc)) {
+                actualSrc = actualSrc.replace(tokenRegex, originalToken);
+              }
+            }
+
             if (actualSrc) {
               // 确保有协议
               attribs.src = actualSrc.startsWith('//')
@@ -787,7 +847,6 @@ export const ZhihuContent: React.FC<ZhihuContentProps> = React.memo(
         fontSizeScale,
         lineHeightScale,
         primaryColor,
-        primaryTransparent,
       ],
     );
 

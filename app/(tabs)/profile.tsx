@@ -293,10 +293,7 @@ export default function ProfileScreen() {
       </View>
 
       {/* 我的资产 */}
-      <View
-        type="surface"
-        className="rounded-2xl mx-3 mt-3 overflow-hidden"
-      >
+      <View type="surface" className="rounded-2xl mx-3 mt-3 overflow-hidden">
         <MenuItem
           icon="bookmark-outline"
           title="我的收藏"
@@ -312,10 +309,7 @@ export default function ProfileScreen() {
       </View>
 
       {/* 通用设置 */}
-      <View
-        type="surface"
-        className="rounded-2xl mx-3 mt-3 overflow-hidden"
-      >
+      <View type="surface" className="rounded-2xl mx-3 mt-3 overflow-hidden">
         <View className="flex-row items-center justify-between py-[15px] px-4 bg-transparent">
           <View className="flex-row items-center bg-transparent">
             <View
@@ -449,7 +443,12 @@ export default function ProfileScreen() {
                         {index === activeAccountIndex && (
                           <View
                             className="ml-2 px-1.5 py-0.5 rounded"
-                            style={{ backgroundColor: useThemeColor({}, 'primaryTransparent') }}
+                            style={{
+                              backgroundColor: useThemeColor(
+                                {},
+                                'primaryTransparent',
+                              ),
+                            }}
                           >
                             <Text
                               className="text-[10px] font-bold"
@@ -502,7 +501,12 @@ export default function ProfileScreen() {
                       {activeAccountIndex === -1 && (
                         <View
                           className="ml-2 px-1.5 py-0.5 rounded"
-                          style={{ backgroundColor: useThemeColor({}, 'primaryTransparent') }}
+                          style={{
+                            backgroundColor: useThemeColor(
+                              {},
+                              'primaryTransparent',
+                            ),
+                          }}
                         >
                           <Text
                             className="text-[10px] font-bold"

@@ -241,9 +241,7 @@ export default function UserDetailScreen() {
     },
   });
 
-  const enableBrowseHistory = useSettingsStore(
-    (s) => s.enableBrowseHistory,
-  );
+  const enableBrowseHistory = useSettingsStore((s) => s.enableBrowseHistory);
 
   useEffect(() => {
     if (enableBrowseHistory && user?.id) {
@@ -536,8 +534,8 @@ export default function UserDetailScreen() {
   const isSearching = debouncedSearchQuery.length > 0;
   const currentListItems = isSearching
     ? searchResults?.pages.flatMap(
-      (page) => page.data?.map(parseSearchResult).filter(Boolean) || [],
-    ) || []
+        (page) => page.data?.map(parseSearchResult).filter(Boolean) || [],
+      ) || []
     : [];
 
   const handleFollow = async () => {
@@ -579,10 +577,10 @@ export default function UserDetailScreen() {
               style={[
                 user?.is_following
                   ? {
-                    backgroundColor: 'transparent',
-                    borderColor: borderColor,
-                    borderWidth: 1,
-                  }
+                      backgroundColor: 'transparent',
+                      borderColor: borderColor,
+                      borderWidth: 1,
+                    }
                   : { backgroundColor: primaryColor },
               ]}
               onPress={handleFollow}

@@ -38,8 +38,8 @@ import { LikeButton } from '@/components/LikeButton';
 import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import { formatDate } from '@/utils/date';
 import { copyToClipboard } from '@/utils/clipboard';
+import { formatDate } from '@/utils/date';
 import { showToast } from '@/utils/toast';
 
 export default function CommentScreen() {
@@ -180,7 +180,9 @@ export default function CommentScreen() {
   const renderComment = ({ item }: { item: CommentItem }) => {
     return (
       <BouncyButton
-        onLongPress={() => handleLongPressComment(item.content, item.author.member.name)}
+        onLongPress={() =>
+          handleLongPressComment(item.content, item.author.member.name)
+        }
         delayLongPress={400}
         style={{
           paddingHorizontal: 15,
@@ -307,7 +309,7 @@ export default function CommentScreen() {
             )}
           </View>
         </View>
-        </BouncyButton>
+      </BouncyButton>
     );
   };
 
@@ -321,7 +323,12 @@ export default function CommentScreen() {
               onPress={() =>
                 setOrderBy((prev) => (prev === 'score' ? 'ts' : 'score'))
               }
-              style={{ marginRight: 4, borderRadius: 6, paddingHorizontal: 4, paddingVertical: 2 }}
+              style={{
+                marginRight: 4,
+                borderRadius: 6,
+                paddingHorizontal: 4,
+                paddingVertical: 2,
+              }}
             >
               <Text
                 style={{ color: tintColor, fontSize: 14, fontWeight: '600' }}
@@ -406,7 +413,10 @@ export default function CommentScreen() {
               <Text type="secondary" className="text-xs">
                 正在回复 {replyTo.name}
               </Text>
-              <BouncyButton onPress={() => setReplyTo(null)} style={{ borderRadius: 8 }}>
+              <BouncyButton
+                onPress={() => setReplyTo(null)}
+                style={{ borderRadius: 8 }}
+              >
                 <Ionicons
                   name="close-circle"
                   size={16}
@@ -434,7 +444,12 @@ export default function CommentScreen() {
             <BouncyButton
               disabled={!inputText.trim() || mutation.isPending}
               onPress={() => mutation.mutate(inputText.trim())}
-              style={{ height: 40, justifyContent: 'center', paddingHorizontal: 15, borderRadius: 20 }}
+              style={{
+                height: 40,
+                justifyContent: 'center',
+                paddingHorizontal: 15,
+                borderRadius: 20,
+              }}
             >
               {mutation.isPending ? (
                 <ActivityIndicator size="small" color={tintColor} />
