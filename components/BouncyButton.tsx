@@ -125,7 +125,7 @@ export function BouncyButton({
         enableRipple
           ? {
               overflow: 'hidden',
-              backgroundColor: 'rgba(0,0,0,0.01)',
+              backgroundColor: 'transparent',
               borderRadius,
             }
           : undefined,
