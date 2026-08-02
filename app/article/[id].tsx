@@ -42,6 +42,7 @@ import { showToast } from '@/utils/toast';
 export default function ArticleDetail() {
   const colorScheme = useColorScheme();
   const primaryColor = useThemeColor({}, 'primary');
+  const warningColor = useThemeColor({}, 'warning');
   const { id, source } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -569,7 +570,7 @@ export default function ArticleDetail() {
                 <MenuOption
                   icon={isCollected ? 'star' : 'star-outline'}
                   label={isCollected ? '取消收藏' : '移至收藏'}
-                  color={isCollected ? useThemeColor({}, 'warning') : undefined}
+                  color={isCollected ? warningColor : undefined}
                   onPress={() => {
                     collectMutation.mutate();
                     setMenuVisible(false);
