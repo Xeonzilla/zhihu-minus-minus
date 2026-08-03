@@ -18,5 +18,8 @@ export * from './search';
 export * from './topic';
 export * from './voters';
 
-// following.ts 与 question.ts 各自定义了同名类型，显式 re-export 消除 export * 歧义
-export type { ZhihuAuthor, ZhihuBadgeV2 } from './following';
+export type {
+  ZhihuAuthor,
+  ZhihuBadgeV2,
+  ZhihuPaging,
+} from '@/types/zhihu';

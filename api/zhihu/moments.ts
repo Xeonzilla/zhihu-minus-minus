@@ -1,5 +1,5 @@
+import type { ZhihuPaging } from '@/types/zhihu';
 import apiClient from '../client';
-import type { ZhihuPaging } from './following';
 
 // ==========================================
 // 1. 类型定义

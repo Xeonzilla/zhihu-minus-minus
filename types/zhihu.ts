@@ -1,3 +1,38 @@
+export interface ZhihuBadge {
+  type: string;
+  description: string;
+}
+
+export interface ZhihuDetailBadge {
+  type?: string;
+  detail_type?: string;
+  title?: string;
+  description?: string;
+  url?: string;
+  icon?: string;
+  night_icon?: string;
+  sources?: any[];
+}
+
+export interface ZhihuMergedBadge {
+  type?: string;
+  detail_type?: string;
+  title?: string;
+  description?: string;
+  url?: string;
+  icon?: string;
+  night_icon?: string;
+  sources?: any[];
+}
+
+export interface ZhihuBadgeV2 {
+  title: string;
+  icon: string;
+  night_icon: string;
+  detail_badges?: ZhihuDetailBadge[] | any[];
+  merged_badges?: ZhihuMergedBadge[] | any[];
+}
+
 export interface ZhihuAuthor {
   id: string;
   name: string;
@@ -10,6 +45,11 @@ export interface ZhihuAuthor {
   is_org?: boolean;
   gender?: number;
   url?: string;
+  is_advertiser?: boolean;
+  is_privacy?: boolean;
+  is_following?: boolean;
+  badge?: ZhihuBadge[] | any[];
+  badge_v2?: ZhihuBadgeV2;
 }
 
 export interface ZhihuQuestion {
@@ -158,3 +198,12 @@ export interface ZhihuColumnDetail {
   author: ZhihuAuthor;
   is_following?: boolean;
 }
+
+export interface ZhihuPaging {
+  is_end: boolean;
+  is_start?: boolean;
+  next: string;
+  previous?: string;
+  totals?: number;
+}
+
