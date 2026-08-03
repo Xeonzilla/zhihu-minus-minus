@@ -1,3 +1,4 @@
+import type { ZhihuPaging } from '@/types/zhihu';
 import apiClient from '../client';
 
 // ==========================================
@@ -14,14 +15,6 @@ export interface ZhihuActor {
 export interface RecentMomentItem {
   actor: ZhihuActor;
   unread_count: number;
-}
-
-export interface ZhihuPaging {
-  is_end: boolean;
-  is_start: boolean;
-  next: string;
-  previous: string;
-  totals?: number;
 }
 
 export interface RecentMomentsResponse {

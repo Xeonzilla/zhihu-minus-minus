@@ -19,6 +19,11 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { useSearchStore } from '@/store/useSearchStore';
 
+/** 转义正则元字符，避免用户输入（如 "C++"）构造出非法正则 */
+function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export default function SearchScreen() {
   const colorScheme = useColorScheme();
   const router = useRouter();
@@ -156,7 +161,7 @@ export default function SearchScreen() {
   const renderSuggestion = ({ item }: { item: any }) => {
     const text = item.query;
     if (!query) return null;
-    const parts = text.split(new RegExp(`(${query})`, 'gi'));
+    const parts = text.split(new RegExp(`(${escapeRegExp(query)})`, 'gi'));
     return (
       <Pressable
         className="flex-row items-center p-[15px]"

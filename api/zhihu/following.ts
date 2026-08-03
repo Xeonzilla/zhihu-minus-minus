@@ -1,56 +1,12 @@
+import type {
+  ZhihuAuthor,
+  ZhihuBadge,
+  ZhihuBadgeV2,
+  ZhihuDetailBadge,
+  ZhihuMergedBadge,
+  ZhihuPaging,
+} from '@/types/zhihu';
 import apiClient from '../client';
-
-export interface ZhihuBadge {
-  type: string;
-  description: string;
-}
-
-export interface ZhihuDetailBadge {
-  type: string;
-  detail_type: string;
-  title: string;
-  description: string;
-  url: string;
-  icon: string;
-  night_icon: string;
-  sources: any[];
-}
-
-export interface ZhihuMergedBadge {
-  type: string;
-  detail_type: string;
-  title: string;
-  description: string;
-  url: string;
-  icon: string;
-  night_icon: string;
-  sources: any[];
-}
-
-export interface ZhihuBadgeV2 {
-  title: string;
-  icon: string;
-  night_icon: string;
-  detail_badges: ZhihuDetailBadge[];
-  merged_badges: ZhihuMergedBadge[];
-}
-
-export interface ZhihuAuthor {
-  id: string;
-  name: string;
-  headline: string;
-  avatar_url: string;
-  avatar_url_template: string;
-  type: string;
-  user_type: string;
-  url_token: string;
-  url: string;
-  is_org: boolean;
-  gender: number;
-  is_advertiser: boolean;
-  badge: ZhihuBadge[];
-  badge_v2?: ZhihuBadgeV2;
-}
 
 export interface ZhihuFollowingColumnItem {
   id: string;
@@ -72,13 +28,6 @@ export interface ZhihuFollowingColumnItem {
   author: ZhihuAuthor;
 }
 
-export interface ZhihuPaging {
-  is_end: boolean;
-  is_start: boolean;
-  next: string;
-  previous: string;
-  totals?: number;
-}
 
 export interface ZhihuFollowingColumnsResponse {
   paging: ZhihuPaging;

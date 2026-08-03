@@ -5,7 +5,7 @@ import {
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
-import { Stack, useRouter } from 'expo-router';
+import { type Href, Stack, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable } from 'react-native';
 import {
@@ -135,7 +135,7 @@ export default function HistoryScreen() {
         if (type === 'profile') {
           router.push(`/user/${token}`);
         } else {
-          router.push(`/${type}/${token}`);
+          router.push(`/${type}/${token}` as Href);
         }
       }
     },
@@ -230,7 +230,6 @@ export default function HistoryScreen() {
       <FlashList
         data={historyItems}
         renderItem={renderItem}
-        {...({ estimatedItemSize: 100 } as any)}
         keyExtractor={(item, index) => {
           const id = item.data?.extra?.content_token || index;
           return `history-${id}-${index}`;

@@ -284,7 +284,9 @@ export default function AppearanceSettings() {
           {showAdvancedColor && (
             <ColorPickerSection
               primaryColor={primaryColor}
-              onColorChange={(color) => updateSettings({ primaryColor: color })}
+              onColorChange={(color: string) =>
+                updateSettings({ primaryColor: color })
+              }
             />
           )}
         </Section>

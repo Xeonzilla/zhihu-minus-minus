@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { FlashList } from '@shopify/flash-list';
+import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo } from 'react';
@@ -138,7 +138,7 @@ export const DailyList = React.forwardRef<
     return items;
   }, [data]);
 
-  const flashListRef = React.useRef<FlashList<any>>(null);
+  const flashListRef = React.useRef<FlashListRef<any>>(null);
 
   React.useImperativeHandle(ref, () => ({
     scrollToOffset: (args: any) => flashListRef.current?.scrollToOffset(args),

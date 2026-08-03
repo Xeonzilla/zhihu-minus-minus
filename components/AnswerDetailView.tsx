@@ -102,9 +102,11 @@ export const AnswerDetailView = ({
 
   const followMutation = useOptimisticToggle({
     mutationFn: async () => {
-      if (answer?.author?.is_following)
-        return unfollowMember(answer.author.url_token || answer.author.id);
-      return followMember(answer.author.url_token || answer.author.id);
+      const author = answer?.author;
+      if (!author) throw new Error('回答尚未加载');
+      if (author.is_following)
+        return unfollowMember(author.url_token || author.id);
+      return followMember(author.url_token || author.id);
     },
     isActive: answer?.author?.is_following,
     successMessage: (isActive) => (isActive ? '已取消关注' : '已关注'),
@@ -426,14 +428,14 @@ export const AnswerDetailView = ({
           <View className="flex-row items-center px-5 h-full bg-transparent">
             <View className="flex-row items-center bg-transparent">
               <LikeButton
-                id={answer?.id}
+                id={answer?.id ?? ''}
                 count={answer?.voteup_count || '-'}
                 voted={answer?.reaction?.relation?.vote === 'UP' ? 1 : 0}
                 variant="minimal"
               />
               <View className="w-2.5 bg-transparent" />
               <DownvoteButton
-                id={answer?.id}
+                id={answer?.id ?? ''}
                 voted={answer?.relationship?.voting}
                 variant="minimal"
               />
@@ -448,7 +450,7 @@ export const AnswerDetailView = ({
                   size={24}
                   colorType="secondary"
                 />
-                {answer?.comment_count > 0 && (
+                {(answer?.comment_count ?? 0) > 0 && (
                   <Text
                     type="secondary"
                     className="ml-1 text-[13px] font-medium"

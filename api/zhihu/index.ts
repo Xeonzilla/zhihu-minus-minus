@@ -17,3 +17,9 @@ export * from './question';
 export * from './search';
 export * from './topic';
 export * from './voters';
+
+export type {
+  ZhihuAuthor,
+  ZhihuBadgeV2,
+  ZhihuPaging,
+} from '@/types/zhihu';
