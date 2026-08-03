@@ -38,21 +38,39 @@ jobs:
 
       - name: 🛠 Build iOS Release (.app)
         run: |
-          WORKSPACE_PATH=$(find ios -maxdepth 1 -name "*.xcworkspace" | head -n 1)
+          cd ios
+          # 修复 React Native 离线打包脚本找不到 node 路径引发的 Exit Code 65
+          echo "export NODE_BINARY=$(which node)" > .xcode.env.local
+
+          WORKSPACE_PATH=$(find . -maxdepth 1 -name "*.xcworkspace" | head -n 1)
           WORKSPACE=$(basename "$WORKSPACE_PATH")
           SCHEME=$(basename "$WORKSPACE" .xcworkspace)
           echo "Found workspace: $WORKSPACE, scheme: $SCHEME"
 
-          xcodebuild -workspace "ios/$WORKSPACE" \
+          set +e
+          xcodebuild -workspace "$WORKSPACE" \
                      -scheme "$SCHEME" \
                      -configuration Release \
                      -sdk iphoneos \
                      SYMROOT="$GITHUB_WORKSPACE/build" \
+                     COMPILER_INDEX_STORE_ENABLE=NO \
                      CODE_SIGNING_ALLOWED=NO \
                      CODE_SIGNING_REQUIRED=NO \
                      CODE_SIGN_IDENTITY="" \
                      CODE_SIGN_ENTITLEMENTS="" \
-                     clean build
+                     clean build > xcodebuild.log 2>&1
+          
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "❌ xcodebuild 编译失败 (Exit Code $EXIT_CODE)，报错日志如下："
+            grep -i -E "error:|failed:|fatal:" xcodebuild.log | head -n 50
+            echo "----------------------------------------"
+            echo "最后 100 行编译日志："
+            tail -n 100 xcodebuild.log
+            exit $EXIT_CODE
+          else
+            echo "✅ xcodebuild 编译成功！"
+          fi
 
       - name: 📦 Package Unsigned IPA
         id: package-ipa
@@ -62,7 +80,9 @@ jobs:
           ARTIFACT_DIR="${RUNNER_TEMP}/ipa-build"
           
           mkdir -p "${ARTIFACT_DIR}/Payload"
-          cp -R build/Release-iphoneos/*.app "${ARTIFACT_DIR}/Payload/"
+          APP_PATH=$(find build -name "*.app" | head -n 1)
+          echo "Found compiled app at: $APP_PATH"
+          cp -R "$APP_PATH" "${ARTIFACT_DIR}/Payload/"
           
           cd "${ARTIFACT_DIR}"
           zip -r "${IPA_NAME}" Payload

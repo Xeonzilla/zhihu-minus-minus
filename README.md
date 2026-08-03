@@ -166,7 +166,6 @@ npm run ios
 
 > [!NOTE]
 > - **构建产物下载**：构建完成后，可在 Actions 运行记录下方的 **Artifacts** 区域下载打包好的 `.apk` 或未签名 `.ipa` 文件。
-> - **iOS 未签名包使用**：未签名的 `.ipa` 包可直接用于 **TrollStore**、**SideStore**、**AltStore**、**Sideloadly** 或 **Esign (轻松签)** 签名安装。
 
 ## 🔐 登录说明
 
