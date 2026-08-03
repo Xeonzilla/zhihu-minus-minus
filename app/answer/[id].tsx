@@ -30,7 +30,12 @@ export default function AnswerDetailScreen() {
     title: initialTitle,
     questionId: propQuestionId,
     sortBy = 'default',
-  } = useLocalSearchParams();
+  } = useLocalSearchParams<{
+    id: string;
+    title?: string;
+    questionId?: string;
+    sortBy?: string;
+  }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
@@ -82,7 +87,7 @@ export default function AnswerDetailScreen() {
 
   // 3. 构建 ID 列表
   const answerIds = useMemo(() => {
-    const listIds =
+    const listIds: string[] =
       answersData?.pages
         .flatMap((p: any) => p.data)
         .map((i: any) => i.id.toString()) || [];

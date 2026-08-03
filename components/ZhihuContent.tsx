@@ -913,7 +913,6 @@ export const ZhihuContent: React.FC<ZhihuContentProps> = React.memo(
       });
     };
 
-    const domProps = useMemo(() => ({ matchContents: true }), []);
     const onReadyCallback = useCallback(() => setDomReady(true), []);
     const onImagePressCallback = useCallback((src: string) => {
       setViewerImage(src);
@@ -1007,7 +1006,6 @@ export const ZhihuContent: React.FC<ZhihuContentProps> = React.memo(
               </View>
             )}
             <ZhihuDOMContent
-              dom={domProps}
               htmlContent={content || ''}
               segmentInfosStr={JSON.stringify(segmentInfos)}
               colorScheme={colorScheme}

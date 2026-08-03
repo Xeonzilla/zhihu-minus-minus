@@ -1,31 +1,5 @@
+import type { ZhihuAuthor, ZhihuBadgeV2 } from '@/types/zhihu';
 import apiClient from '../client';
-
-export interface ZhihuBadgeV2 {
-  detail_badges: any[];
-  icon: string;
-  merged_badges: any[];
-  night_icon: string;
-  title: string;
-}
-
-export interface ZhihuAuthor {
-  avatar_url: string;
-  avatar_url_template: string;
-  badge: any[];
-  badge_v2: ZhihuBadgeV2;
-  gender: number;
-  headline: string;
-  id: string;
-  is_advertiser: boolean;
-  is_org: boolean;
-  is_privacy: boolean;
-  name: string;
-  type: string;
-  url: string;
-  url_token: string;
-  user_type: string;
-  is_following?: boolean;
-}
 
 export interface ZhihuQuestionBrief {
   created: number;

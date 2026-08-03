@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/store/useAuthStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 import apiClient from '../client';
 
 export interface FeedAuthor {

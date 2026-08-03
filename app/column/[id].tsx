@@ -250,7 +250,6 @@ export default function ColumnDetail() {
       <FlashList
         data={articles}
         renderItem={renderItem}
-        estimatedItemSize={120}
         ListHeaderComponent={renderHeader}
         onEndReached={() =>
           hasNextPage && !isFetchingNextPage && fetchNextPage()
