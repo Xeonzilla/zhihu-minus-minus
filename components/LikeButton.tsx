@@ -24,7 +24,7 @@ export const LikeButton = ({
   onVoteChange,
 }: {
   id: string | number;
-  count: number;
+  count: number | string;
   voted?: number;
   type?: 'answers' | 'articles' | 'questions' | 'pins' | 'comments';
   variant?: 'default' | 'ghost' | 'minimal';
@@ -77,9 +77,12 @@ export const LikeButton = ({
       await voteContent(id, type, voteType as any);
 
       setVoted(nextVoted);
-      const newCount = isUpvoted ? count - 1 : count + 1;
-      setCount(newCount);
-      onVoteChange?.(nextVoted, newCount);
+      // count 可能是占位符（如 '-'），仅在数字时增减并通知外部
+      if (typeof count === 'number') {
+        const newCount = isUpvoted ? count - 1 : count + 1;
+        setCount(newCount);
+        onVoteChange?.(nextVoted, newCount);
+      }
       showToast(isUpvoted ? '已取消赞同' : '已赞同');
     } catch (err) {
       console.error('投票失败:', err);
@@ -163,7 +166,7 @@ export const LikeButton = ({
                 : '#888',
           }}
         >
-          {count !== undefined && count > 0
+          {typeof count === 'number' && count > 0
             ? count
             : variant === 'default'
               ? '0 赞同'

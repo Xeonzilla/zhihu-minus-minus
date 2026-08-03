@@ -151,6 +151,7 @@ export interface ZhihuColumnDetail {
   comment_permission: string;
   intro?: string;
   excerpt?: string;
+  extra?: string;
   followers?: number;
   items_count?: number;
   articles_count?: number;
