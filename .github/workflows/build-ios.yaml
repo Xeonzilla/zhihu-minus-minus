@@ -1,0 +1,71 @@
+name: Build Unsigned iOS IPA
+
+on:
+  workflow_dispatch: # 手动点击触发
+
+env:
+  NODE_VERSION: 22.x
+
+jobs:
+  build-ios:
+    name: 🍎 Build Unsigned iOS IPA
+    runs-on: macos-26
+    permissions:
+      contents: read
+
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: ⚙️ Expo Prebuild iOS
+        run: npx expo prebuild --platform ios
+
+      - name: ⚙️ Pod Install
+        run: |
+          cd ios
+          pod install
+
+      - name: 🛠 Build iOS Release (.app)
+        run: |
+          cd ios
+          xcodebuild -workspace ZhihuMinusMinus.xcworkspace \
+                     -scheme ZhihuMinusMinus \
+                     -configuration Release \
+                     -sdk iphoneos \
+                     -derivedDataPath build \
+                     CODE_SIGNING_ALLOWED=NO \
+                     CODE_SIGNING_REQUIRED=NO \
+                     CODE_SIGN_IDENTITY="" \
+                     CODE_SIGN_ENTITLEMENTS=""
+
+      - name: 📦 Package Unsigned IPA
+        id: package-ipa
+        run: |
+          APP_VERSION=$(node -p "require('./package.json').version")
+          IPA_NAME="zhihu-minus-minus-v${APP_VERSION}-unsigned.ipa"
+          ARTIFACT_DIR="${RUNNER_TEMP}/ipa-build"
+          
+          mkdir -p "${ARTIFACT_DIR}/Payload"
+          cp -R ios/build/Build/Products/Release-iphoneos/*.app "${ARTIFACT_DIR}/Payload/"
+          
+          cd "${ARTIFACT_DIR}"
+          zip -r "${IPA_NAME}" Payload
+          
+          echo "ipaName=${IPA_NAME}" >> $GITHUB_OUTPUT
+          echo "ipaPath=${ARTIFACT_DIR}/${IPA_NAME}" >> $GITHUB_OUTPUT
+
+      - name: 🚀 Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zhihu-minus-minus-unsigned-ipa
+          path: ${{ steps.package-ipa.outputs.ipaPath }}
+          if-no-files-found: error

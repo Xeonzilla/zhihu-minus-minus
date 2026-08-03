@@ -145,6 +145,29 @@ npm run android
 npm run ios
 ```
 
+## 📦 GitHub Actions 自动打包发布
+
+本项目已配置 GitHub Actions 自动化构建工作流：
+- **Android APK 构建与 Release**（[`.github/workflows/build.yaml`](.github/workflows/build.yaml)）
+- **iOS 未签名 IPA 构建**（[`.github/workflows/build-ios.yaml`](.github/workflows/build-ios.yaml)）
+
+### 1. 前置准备 (Fork 与 Secrets 配置)
+1. **Fork 仓库**：点击项目右上角的 **Fork** 按钮，将仓库复制到你自己的 GitHub 账号下。
+2. **启用 Actions**：进入你 Fork 的仓库，点击 **Actions** 标签页，点击 *“I understand my workflows, go ahead and enable them”* 开启工作流权限。
+3. **配置密钥 (Secrets)**：在 Fork 仓库设置中（`Settings` -> `Secrets and variables` -> `Actions`）点击 **New repository secret** 添加：
+   - `EXPO_TOKEN` *(Android 构建必填)*: 你的 Expo Token（需先在 [Expo 官网](https://expo.dev) 注册账号，然后在 [Access Tokens](https://expo.dev/settings/access-tokens) 页面新建并复制 Token）。
+
+### 2. 触发打包步骤
+1. 进入你 Fork 的仓库页面，点击 **Actions** 标签页。
+2. 在左侧侧边栏中选择目标工作流：
+   - 打包 Android：选择 **Build and Release**
+   - 打包 iOS 未签名包：选择 **Build Unsigned iOS IPA**
+3. 点击右侧 **Run workflow** 下拉菜单，点击 **Run workflow** 启动打包。
+
+> [!NOTE]
+> - **构建产物下载**：构建完成后，可在 Actions 运行记录下方的 **Artifacts** 区域下载打包好的 `.apk` 或未签名 `.ipa` 文件。
+> - **iOS 未签名包使用**：未签名的 `.ipa` 包可直接用于 **TrollStore**、**SideStore**、**AltStore**、**Sideloadly** 或 **Esign (轻松签)** 签名安装。
+
 ## 🔐 登录说明
 
 由于知乎 API 的安全性限制（X-ZSE-96 等），目前采用 WebView 自动拦截方案：
@@ -160,6 +183,11 @@ npm run ios
 - **免责声明**: 本项目仅供学习交流使用，不建议用于商业用途。
 - **License**: GPL-3.0 license
 
+### 👥 贡献者 (Contributors)
+
+<a href="https://github.com/huamurui/zhihu-minus-minus/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=huamurui/zhihu-minus-minus" />
+</a>
+
 ---
-**Author**: [huamurui](https://github.com/huamurui) & [Antigravity Agent] 🐱
 **Version**: v0.2.0 | **Last Updated**: 2026-08-03
