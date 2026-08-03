@@ -37,10 +37,16 @@ jobs:
           pod install
 
       - name: 🛠 Build iOS Release (.app)
+        env:
+          SENTRY_DISABLE_AUTO_UPLOAD: "true"
+          SENTRY_NO_UPLOAD: "1"
         run: |
           cd ios
           # 修复 React Native 离线打包脚本找不到 node 路径引发的 Exit Code 65
           echo "export NODE_BINARY=$(which node)" > .xcode.env.local
+          # 禁用云端编译时的 Sentry Sourcemap 自动上传（规避缺少 SENTRY_AUTH_TOKEN 导致的崩溃）
+          echo "export SENTRY_DISABLE_AUTO_UPLOAD=true" >> .xcode.env.local
+          echo "export SENTRY_NO_UPLOAD=1" >> .xcode.env.local
 
           WORKSPACE_PATH=$(find . -maxdepth 1 -name "*.xcworkspace" | head -n 1)
           WORKSPACE=$(basename "$WORKSPACE_PATH")

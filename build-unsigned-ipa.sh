@@ -16,6 +16,11 @@ else
 fi
 
 echo "📦 [2/3] 开始编译 iOS App 产物 (未签名 Release)..."
+export SENTRY_DISABLE_AUTO_UPLOAD=true
+export SENTRY_NO_UPLOAD=1
+mkdir -p ios
+echo "export SENTRY_DISABLE_AUTO_UPLOAD=true" >> ios/.xcode.env.local
+echo "export SENTRY_NO_UPLOAD=1" >> ios/.xcode.env.local
 xcodebuild -workspace ios/app.xcworkspace \
   -scheme app \
   -configuration Release \
