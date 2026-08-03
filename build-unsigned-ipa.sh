@@ -28,17 +28,20 @@ xcodebuild -workspace ios/app.xcworkspace \
   clean build
 
 echo "🗜️ [3/3] 开始打包成 .ipa 文件..."
+APP_VERSION=$(node -p "require('./package.json').version")
+IPA_NAME="zhihu-minus-minus-v${APP_VERSION}-unsigned.ipa"
+
 # 清理可能存在的旧包和临时目录
-rm -f ZhihuMinusMinus_unsigned.ipa
+rm -f zhihu-minus-minus-v*.ipa
 rm -rf Payload
 
 # 打包
 mkdir -p Payload
-cp -r build/Release-iphoneos/app.app Payload/
-zip -r ZhihuMinusMinus_unsigned.ipa Payload
+cp -r build/Release-iphoneos/*.app Payload/
+zip -r "$IPA_NAME" Payload
 
 # 清理临时 Payload 文件夹
 rm -rf Payload
 
 echo "✅ 打包完成！未签名 IPA 生成成功！"
-echo "👉 产物路径: $PROJECT_ROOT/ZhihuMinusMinus_unsigned.ipa"
+echo "👉 产物路径: $PROJECT_ROOT/$IPA_NAME"

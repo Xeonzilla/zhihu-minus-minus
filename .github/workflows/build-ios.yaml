@@ -15,7 +15,9 @@ jobs:
 
     steps:
       - name: 🏗 Setup repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: 🏗 Setup Node
         uses: actions/setup-node@v4
@@ -36,16 +38,21 @@ jobs:
 
       - name: 🛠 Build iOS Release (.app)
         run: |
-          cd ios
-          xcodebuild -workspace ZhihuMinusMinus.xcworkspace \
-                     -scheme ZhihuMinusMinus \
+          WORKSPACE_PATH=$(find ios -maxdepth 1 -name "*.xcworkspace" | head -n 1)
+          WORKSPACE=$(basename "$WORKSPACE_PATH")
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          echo "Found workspace: $WORKSPACE, scheme: $SCHEME"
+
+          xcodebuild -workspace "ios/$WORKSPACE" \
+                     -scheme "$SCHEME" \
                      -configuration Release \
                      -sdk iphoneos \
-                     -derivedDataPath build \
+                     SYMROOT="$GITHUB_WORKSPACE/build" \
                      CODE_SIGNING_ALLOWED=NO \
                      CODE_SIGNING_REQUIRED=NO \
                      CODE_SIGN_IDENTITY="" \
-                     CODE_SIGN_ENTITLEMENTS=""
+                     CODE_SIGN_ENTITLEMENTS="" \
+                     clean build
 
       - name: 📦 Package Unsigned IPA
         id: package-ipa
@@ -55,7 +62,7 @@ jobs:
           ARTIFACT_DIR="${RUNNER_TEMP}/ipa-build"
           
           mkdir -p "${ARTIFACT_DIR}/Payload"
-          cp -R ios/build/Build/Products/Release-iphoneos/*.app "${ARTIFACT_DIR}/Payload/"
+          cp -R build/Release-iphoneos/*.app "${ARTIFACT_DIR}/Payload/"
           
           cd "${ARTIFACT_DIR}"
           zip -r "${IPA_NAME}" Payload
