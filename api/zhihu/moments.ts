@@ -1,4 +1,5 @@
 import apiClient from '../client';
+import type { ZhihuPaging } from './following';
 
 // ==========================================
 // 1. 类型定义
@@ -14,14 +15,6 @@ export interface ZhihuActor {
 export interface RecentMomentItem {
   actor: ZhihuActor;
   unread_count: number;
-}
-
-export interface ZhihuPaging {
-  is_end: boolean;
-  is_start: boolean;
-  next: string;
-  previous: string;
-  totals?: number;
 }
 
 export interface RecentMomentsResponse {
