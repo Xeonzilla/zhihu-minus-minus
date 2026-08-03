@@ -84,6 +84,13 @@ export const useSettingsStore = create<SettingsState>()(
           ) {
             nextSettings.visibleTabs = [...nextSettings.visibleTabs, 'profile'];
           }
+          // 兜底：若 defaultTab 不在 visibleTabs 中，自动重置为第一个可见 Tab
+          if (
+            nextSettings.visibleTabs &&
+            !nextSettings.visibleTabs.includes(nextSettings.defaultTab)
+          ) {
+            nextSettings.defaultTab = nextSettings.visibleTabs[0] || 'recommend';
+          }
           // 兜底：非法 hex 颜色退回默认（null）
           nextSettings.primaryColor = sanitizeColor(nextSettings.primaryColor);
           return nextSettings;

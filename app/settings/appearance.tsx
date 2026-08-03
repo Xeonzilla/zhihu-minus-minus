@@ -28,13 +28,22 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const PRESET_COLORS = [
-  '#0084ff', // Zhihu Blue
-  '#ff4d4f', // Red
-  '#2ecc71', // Green
-  '#f39c12', // Orange
-  '#9b59b6', // Purple
-  '#34495e', // Navy
+export interface ColorPreset {
+  name: string;
+  value: string;
+}
+
+const PRESET_COLORS: ColorPreset[] = [
+  { name: '知乎蓝', value: '#0084ff' },
+  { name: '极客靛', value: '#6366f1' },
+  { name: '薄荷青', value: '#00a896' },
+  { name: '翡翠绿', value: '#10b981' },
+  { name: '落日橙', value: '#f97316' },
+  { name: '樱花粉', value: '#ec4899' },
+  { name: '蜜桃粉', value: '#ff758f' },
+  { name: '玫瑰红', value: '#f43f5e' },
+  { name: '紫罗兰', value: '#8b5cf6' },
+  { name: '静谧灰', value: '#64748b' },
 ];
 
 export default function AppearanceSettings() {
@@ -202,40 +211,61 @@ export default function AppearanceSettings() {
         {/* 2. 主题颜色 */}
         <Section title="主题颜色" colorScheme={colorScheme}>
           <RNView style={styles.colorGrid}>
-            {PRESET_COLORS.map((color) => (
-              <Pressable
-                key={color}
-                onPress={() => updateSettings({ primaryColor: color })}
-                style={[
-                  styles.colorCircle,
-                  { backgroundColor: color },
-                  primaryColor === color && {
-                    borderColor: isDark ? '#fff' : '#000',
-                    borderWidth: 3,
-                  },
-                ]}
-              />
-            ))}
+            {PRESET_COLORS.map((preset) => {
+              const isSelected = primaryColor === preset.value;
+              return (
+                <Pressable
+                  key={preset.value}
+                  onPress={() => updateSettings({ primaryColor: preset.value })}
+                  style={[
+                    styles.colorChip,
+                    {
+                      backgroundColor: Colors[colorScheme].backgroundTertiary,
+                      borderColor: isSelected ? preset.value : 'transparent',
+                    },
+                    isSelected && { borderWidth: 1.5 },
+                  ]}
+                >
+                  <RNView
+                    style={[styles.colorDot, { backgroundColor: preset.value }]}
+                  />
+                  {isSelected && (
+                    <Ionicons
+                      name="checkmark"
+                      size={14}
+                      color={preset.value}
+                      style={{ marginLeft: 2 }}
+                    />
+                  )}
+                </Pressable>
+              );
+            })}
             <Pressable
               onPress={() => updateSettings({ primaryColor: '#0084ff' })}
               style={[
-                styles.colorCircle,
+                styles.colorChip,
                 {
-                  backgroundColor: isDark ? '#333' : '#e5e5ea',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                },
-                primaryColor === '#0084ff' && {
-                  borderColor: isDark ? '#fff' : '#000',
-                  borderWidth: 3,
+                  backgroundColor: Colors[colorScheme].backgroundTertiary,
+                  borderColor:
+                    primaryColor === '#0084ff' || !primaryColor
+                      ? '#0084ff'
+                      : 'transparent',
                 },
               ]}
             >
               <Ionicons
-                name="refresh"
-                size={20}
-                color={isDark ? '#aaa' : '#666'}
+                name="refresh-outline"
+                size={14}
+                color={Colors[colorScheme].textSecondary}
               />
+              <Text
+                style={[
+                  styles.colorChipText,
+                  { color: Colors[colorScheme].textSecondary },
+                ]}
+              >
+                重置
+              </Text>
             </Pressable>
           </RNView>
 
@@ -325,117 +355,117 @@ export default function AppearanceSettings() {
 
           {(Platform.OS !== 'android' ||
             androidFeedbackType === 'scale-opacity') && (
-            <>
-              <SettingItem
-                label="按压不透明度"
-                icon="contrast-outline"
-                colorScheme={colorScheme}
-              >
-                <View style={styles.row}>
-                  <Pressable
-                    onPress={() =>
-                      updateSettings({
-                        pressOpacity: Math.max(
-                          0.5,
-                          parseFloat((pressOpacity - 0.05).toFixed(2)),
-                        ),
-                      })
-                    }
-                    style={[
-                      styles.smallBtn,
-                      {
-                        backgroundColor: Colors[colorScheme].backgroundTertiary,
-                      },
-                    ]}
-                  >
-                    <Ionicons
-                      name="remove"
-                      size={18}
-                      color={Colors[colorScheme].text}
-                    />
-                  </Pressable>
-                  <Text style={styles.valueText}>
-                    {pressOpacity.toFixed(2)}
-                  </Text>
-                  <Pressable
-                    onPress={() =>
-                      updateSettings({
-                        pressOpacity: Math.min(
-                          1.0,
-                          parseFloat((pressOpacity + 0.05).toFixed(2)),
-                        ),
-                      })
-                    }
-                    style={[
-                      styles.smallBtn,
-                      {
-                        backgroundColor: Colors[colorScheme].backgroundTertiary,
-                      },
-                    ]}
-                  >
-                    <Ionicons
-                      name="add"
-                      size={18}
-                      color={Colors[colorScheme].text}
-                    />
-                  </Pressable>
-                </View>
-              </SettingItem>
-              <SettingItem
-                label="按压缩放比例"
-                icon="expand-outline"
-                colorScheme={colorScheme}
-              >
-                <View style={styles.row}>
-                  <Pressable
-                    onPress={() =>
-                      updateSettings({
-                        pressScale: Math.max(
-                          0.88,
-                          parseFloat((pressScale - 0.01).toFixed(2)),
-                        ),
-                      })
-                    }
-                    style={[
-                      styles.smallBtn,
-                      {
-                        backgroundColor: Colors[colorScheme].backgroundTertiary,
-                      },
-                    ]}
-                  >
-                    <Ionicons
-                      name="remove"
-                      size={18}
-                      color={Colors[colorScheme].text}
-                    />
-                  </Pressable>
-                  <Text style={styles.valueText}>{pressScale.toFixed(2)}</Text>
-                  <Pressable
-                    onPress={() =>
-                      updateSettings({
-                        pressScale: Math.min(
-                          1.0,
-                          parseFloat((pressScale + 0.01).toFixed(2)),
-                        ),
-                      })
-                    }
-                    style={[
-                      styles.smallBtn,
-                      {
-                        backgroundColor: Colors[colorScheme].backgroundTertiary,
-                      },
-                    ]}
-                  >
-                    <Ionicons
-                      name="add"
-                      size={18}
-                      color={Colors[colorScheme].text}
-                    />
-                  </Pressable>
-                </View>
-              </SettingItem>
-            </>
-          )}
+              <>
+                <SettingItem
+                  label="按压不透明度"
+                  icon="contrast-outline"
+                  colorScheme={colorScheme}
+                >
+                  <View style={styles.row}>
+                    <Pressable
+                      onPress={() =>
+                        updateSettings({
+                          pressOpacity: Math.max(
+                            0.5,
+                            parseFloat((pressOpacity - 0.05).toFixed(2)),
+                          ),
+                        })
+                      }
+                      style={[
+                        styles.smallBtn,
+                        {
+                          backgroundColor: Colors[colorScheme].backgroundTertiary,
+                        },
+                      ]}
+                    >
+                      <Ionicons
+                        name="remove"
+                        size={18}
+                        color={Colors[colorScheme].text}
+                      />
+                    </Pressable>
+                    <Text style={styles.valueText}>
+                      {pressOpacity.toFixed(2)}
+                    </Text>
+                    <Pressable
+                      onPress={() =>
+                        updateSettings({
+                          pressOpacity: Math.min(
+                            1.0,
+                            parseFloat((pressOpacity + 0.05).toFixed(2)),
+                          ),
+                        })
+                      }
+                      style={[
+                        styles.smallBtn,
+                        {
+                          backgroundColor: Colors[colorScheme].backgroundTertiary,
+                        },
+                      ]}
+                    >
+                      <Ionicons
+                        name="add"
+                        size={18}
+                        color={Colors[colorScheme].text}
+                      />
+                    </Pressable>
+                  </View>
+                </SettingItem>
+                <SettingItem
+                  label="按压缩放比例"
+                  icon="expand-outline"
+                  colorScheme={colorScheme}
+                >
+                  <View style={styles.row}>
+                    <Pressable
+                      onPress={() =>
+                        updateSettings({
+                          pressScale: Math.max(
+                            0.88,
+                            parseFloat((pressScale - 0.01).toFixed(2)),
+                          ),
+                        })
+                      }
+                      style={[
+                        styles.smallBtn,
+                        {
+                          backgroundColor: Colors[colorScheme].backgroundTertiary,
+                        },
+                      ]}
+                    >
+                      <Ionicons
+                        name="remove"
+                        size={18}
+                        color={Colors[colorScheme].text}
+                      />
+                    </Pressable>
+                    <Text style={styles.valueText}>{pressScale.toFixed(2)}</Text>
+                    <Pressable
+                      onPress={() =>
+                        updateSettings({
+                          pressScale: Math.min(
+                            1.0,
+                            parseFloat((pressScale + 0.01).toFixed(2)),
+                          ),
+                        })
+                      }
+                      style={[
+                        styles.smallBtn,
+                        {
+                          backgroundColor: Colors[colorScheme].backgroundTertiary,
+                        },
+                      ]}
+                    >
+                      <Ionicons
+                        name="add"
+                        size={18}
+                        color={Colors[colorScheme].text}
+                      />
+                    </Pressable>
+                  </View>
+                </SettingItem>
+              </>
+            )}
 
           <SettingItem
             label="实时预览"
@@ -1016,13 +1046,25 @@ const styles = StyleSheet.create({
   colorGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
     padding: 16,
   },
-  colorCircle: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+  colorChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 6,
+  },
+  colorDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+  },
+  colorChipText: {
+    fontSize: 14,
   },
   tabGrid: {
     flexDirection: 'row',

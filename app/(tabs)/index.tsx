@@ -85,21 +85,23 @@ export default function HomeScreen() {
       'publish',
       'profile',
     ].filter((tab) => {
-      if (tab === 'publish' || tab === 'profile') return true;
+      if (tab === 'profile') return true;
       return visibleTabs.includes(tab as any);
     }) as TabType[];
   }, [visibleTabs]);
 
+  const homeTabs = useMemo(() => {
+    return currentTabs.filter((t) => !['publish', 'profile'].includes(t));
+  }, [currentTabs]);
+  const homeTabsCount = homeTabs.length;
+
   const bottomCapsuleWidth = useMemo(() => {
-    const homeTabsCount = currentTabs.filter(
-      (t) => !['publish', 'profile'].includes(t),
-    ).length;
     const hasPublish = currentTabs.includes('publish');
     const hasProfile = currentTabs.includes('profile');
     const totalBottomIcons =
       (homeTabsCount > 0 ? 1 : 0) + (hasPublish ? 1 : 0) + (hasProfile ? 1 : 0);
     return containerWidth / (totalBottomIcons || 1) - 20;
-  }, [currentTabs, containerWidth]);
+  }, [currentTabs, homeTabsCount, containerWidth]);
 
   // 计算初始页码
   const initialPageIndex = useMemo(() => {
@@ -159,10 +161,7 @@ export default function HomeScreen() {
   );
 
   const handleHomeTabPress = () => {
-    const homeTabs = currentTabs.filter(
-      (t) => !['publish', 'profile'].includes(t),
-    );
-    const isAtHome = currentPage < homeTabs.length;
+    const isAtHome = currentPage < homeTabsCount;
 
     if (isAtHome) {
       if (scrolledTabs[currentPage]) {
@@ -187,40 +186,51 @@ export default function HomeScreen() {
 
   // 顶部导航栏动画样式
   const topNavAnimStyle = useAnimatedStyle(() => {
-    // 当滑动到 index 5 (发布) 及以后时，顶部导航渐隐
+    if (homeTabsCount === 0) {
+      return {
+        opacity: 0,
+        transform: [{ translateY: -100 }],
+        pointerEvents: 'none',
+      };
+    }
+    const fadeStart = homeTabsCount - 1;
+    const fadeEnd = homeTabsCount;
     const opacity = interpolate(
       scrollX.value,
-      [4, 5],
+      [fadeStart, fadeEnd],
       [1, 0],
       Extrapolate.CLAMP,
     );
     const translateY = interpolate(
       scrollX.value,
-      [4, 5],
+      [fadeStart, fadeEnd],
       [0, -100],
       Extrapolate.CLAMP,
     );
     return {
       opacity,
       transform: [{ translateY }],
-      pointerEvents: scrollX.value > 4.5 ? 'none' : 'auto',
+      pointerEvents: scrollX.value > fadeStart + 0.5 ? 'none' : 'auto',
     };
   });
 
   // 顶部 Tab 指示器动画
   const topIndicatorStyle = useAnimatedStyle(() => {
     const tabWidth = 58;
+    const maxIndex = Math.max(0, homeTabsCount - 1);
+    const clampedScroll = interpolate(
+      scrollX.value,
+      [0, maxIndex],
+      [0, maxIndex],
+      Extrapolate.CLAMP,
+    );
     return {
-      transform: [{ translateX: scrollX.value * tabWidth }],
+      transform: [{ translateX: clampedScroll * tabWidth }],
     };
   });
 
   // 底部导航栏指示器动画
   const bottomIndicatorStyle = useAnimatedStyle(() => {
-    // 家 (Home) 包含除了 publish 和 profile 以外的所有
-    const homeTabsCount = currentTabs.filter(
-      (t) => !['publish', 'profile'].includes(t),
-    ).length;
     const hasPublish = currentTabs.includes('publish');
     const hasProfile = currentTabs.includes('profile');
 
@@ -229,17 +239,16 @@ export default function HomeScreen() {
       (homeTabsCount > 0 ? 1 : 0) + (hasPublish ? 1 : 0) + (hasProfile ? 1 : 0);
     const iconWidth = containerWidth / (totalBottomIcons || 1);
 
-    // 计算平滑位移
-    // 映射逻辑：将 scrollX (0~N) 映射到 底部图标索引 (0~M)
-    const homeEndIndex = homeTabsCount > 0 ? homeTabsCount - 1 : -1;
-
     // 构建插值映射表
     const inputRange: number[] = [];
     const outputRange: number[] = [];
 
-    // 1. 首页区域：无论在首页内怎么滑，底部指示器都在索引 0 (如果是存在的)
-    if (homeTabsCount > 0) {
-      inputRange.push(0, homeEndIndex);
+    // 1. 首页区域：无论在首页内怎么滑，底部指示器都在索引 0
+    if (homeTabsCount === 1) {
+      inputRange.push(0);
+      outputRange.push(0);
+    } else if (homeTabsCount > 1) {
+      inputRange.push(0, homeTabsCount - 1);
       outputRange.push(0, 0);
     }
 
@@ -366,30 +375,17 @@ export default function HomeScreen() {
         }}
       >
         {currentTabs.map((tab, idx) => {
-          const globalIndex = (
-            [
-              'following',
-              'recommend',
-              'local',
-              'hot',
-              'daily',
-              'publish',
-              'profile',
-            ] as TabKey[]
-          ).indexOf(tab);
-          const _isHomeTab = !['publish', 'profile'].includes(tab);
-
           return (
             <View key={tab} style={{ flex: 1, backgroundColor: 'transparent' }}>
-              {globalIndex === 4 ? (
+              {tab === 'daily' ? (
                 <DailyList
                   ref={(el) => (listRefs.current[idx] = el)}
                   insets={insets}
                   onScroll={(offset) => handleScrollUpdate(idx, offset)}
                 />
-              ) : globalIndex === 5 ? (
+              ) : tab === 'publish' ? (
                 <PublishScreen />
-              ) : globalIndex === 6 ? (
+              ) : tab === 'profile' ? (
                 <ProfileScreen />
               ) : !cookies && tab === 'following' ? (
                 <View style={styles.loginPrompt}>
@@ -444,16 +440,7 @@ export default function HomeScreen() {
                 styles.bottomIndicator,
                 {
                   backgroundColor: useThemeColor({}, 'primary_26'),
-                  width:
-                    containerWidth /
-                      ((currentTabs.filter(
-                        (t) => !['publish', 'profile'].includes(t),
-                      ).length > 0
-                        ? 1
-                        : 0) +
-                        (currentTabs.includes('publish') ? 1 : 0) +
-                        (currentTabs.includes('profile') ? 1 : 0)) -
-                    20,
+                  width: bottomCapsuleWidth,
                 },
                 bottomIndicatorStyle,
               ]}
