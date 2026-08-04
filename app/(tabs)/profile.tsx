@@ -31,6 +31,7 @@ export default function ProfileScreen() {
   const queryClient = useQueryClient();
   const { isDark, toggleTheme } = useThemeStore();
   const accentColor = useThemeColor({}, 'primary');
+  const accentBgColor = useThemeColor({}, 'primaryTransparent');
   const surfaceColor = Colors[colorScheme].surface;
   const textColor = Colors[colorScheme].text;
   const { enablePrivateMessaging } = useSettingsStore();
@@ -444,10 +445,7 @@ export default function ProfileScreen() {
                           <View
                             className="ml-2 px-1.5 py-0.5 rounded"
                             style={{
-                              backgroundColor: useThemeColor(
-                                {},
-                                'primaryTransparent',
-                              ),
+                              backgroundColor: accentBgColor,
                             }}
                           >
                             <Text
@@ -502,10 +500,7 @@ export default function ProfileScreen() {
                         <View
                           className="ml-2 px-1.5 py-0.5 rounded"
                           style={{
-                            backgroundColor: useThemeColor(
-                              {},
-                              'primaryTransparent',
-                            ),
+                            backgroundColor: accentBgColor,
                           }}
                         >
                           <Text

@@ -218,6 +218,7 @@ export const AnswerDetailView = ({
 
   const primaryColor = useThemeColor({}, 'primary');
   const primaryTransparent = useThemeColor({}, 'primaryTransparent');
+  const warningColor = useThemeColor({}, 'warning');
 
   return (
     <View className="flex-1">
@@ -527,7 +528,7 @@ export const AnswerDetailView = ({
                 <MenuOption
                   icon={isCollected ? 'star' : 'star-outline'}
                   label={isCollected ? '取消收藏' : '移至收藏'}
-                  color={isCollected ? useThemeColor({}, 'warning') : undefined}
+                  color={isCollected ? warningColor : undefined}
                   onPress={() => {
                     collectMutation.mutate();
                     setMenuVisible(false);
