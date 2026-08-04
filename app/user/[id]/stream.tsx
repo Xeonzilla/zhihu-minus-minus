@@ -685,7 +685,7 @@ export default function UserStreamScreen() {
         style={
           isHighlighted && {
             borderLeftWidth: 3,
-            borderLeftColor: useThemeColor({}, 'primary'),
+            borderLeftColor: primaryColor,
           }
         }
         onLayout={(event) => {

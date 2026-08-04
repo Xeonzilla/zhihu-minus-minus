@@ -121,6 +121,7 @@ export default function HomeScreen() {
 
   const tintColor = useThemeColor({}, 'primary');
   const textColor = useThemeColor({}, 'text');
+  const indicatorBgColor = useThemeColor({}, 'primary_26');
   const [currentPage, setCurrentPage] = useState(initialPageIndex);
   const [guestCookieReady, setGuestCookieReady] = useState(false);
 
@@ -313,7 +314,7 @@ export default function HomeScreen() {
               <Animated.View
                 style={[
                   styles.topPill,
-                  { backgroundColor: useThemeColor({}, 'primary_26') },
+                  { backgroundColor: indicatorBgColor },
                   topIndicatorStyle,
                 ]}
               />
@@ -439,7 +440,7 @@ export default function HomeScreen() {
               style={[
                 styles.bottomIndicator,
                 {
-                  backgroundColor: useThemeColor({}, 'primary_26'),
+                  backgroundColor: indicatorBgColor,
                   width: bottomCapsuleWidth,
                 },
                 bottomIndicatorStyle,

@@ -39,6 +39,7 @@ export const CreationCard = React.forwardRef(
     const router = useRouter();
     const colorScheme = useColorScheme();
     const primaryColor = useThemeColor({}, 'primary');
+    const warningColor = useThemeColor({}, 'warning');
     const [localExpanded, setLocalExpanded] = React.useState(false);
     const [menuVisible, setMenuVisible] = React.useState(false);
     const footerRef = React.useRef<NativeView>(null);
@@ -384,15 +385,13 @@ export const CreationCard = React.forwardRef(
                   <Ionicons
                     name={isCollected ? 'star' : 'star-outline'}
                     size={16}
-                    color={isCollected ? useThemeColor({}, 'warning') : '#888'}
+                    color={isCollected ? warningColor : '#888'}
                   />
                   {displayCount > 0 && (
                     <Text
                       className="ml-1 text-xs font-semibold"
                       style={{
-                        color: isCollected
-                          ? useThemeColor({}, 'warning')
-                          : '#888',
+                        color: isCollected ? warningColor : '#888',
                       }}
                     >
                       {displayCount}
