@@ -104,6 +104,8 @@
 
 ## 🚀 快速开始
 
+**特别的，关于在 windwos 启动项目并调试打包 Android 应用，可以参考 [这里](./BUILD_WINDOWS.md)**
+
 本项目涉及到一些原生库，推荐使用 **Development Build** 进行开发。
 
 基础环境:
