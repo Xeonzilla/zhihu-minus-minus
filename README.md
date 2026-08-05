@@ -70,7 +70,7 @@
 
 1. `git clone` 本仓库。
 2. 安装环境（参考下方的 **快速开始**）。
-3. 难蚌 expo 搞的只有 Linux/macOS 才能本地打包安卓...
+3. ~~难蚌 expo 搞的只有 Linux/macOS 才能本地打包安卓...~~ 或者，看看 **[这里](./BUILD_WINDOWS.md)**，Windows 开发指南。
 
 `npm run prebuild`
 
