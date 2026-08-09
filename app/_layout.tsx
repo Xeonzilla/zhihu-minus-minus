@@ -23,10 +23,10 @@ import {
   useSyncThemeWithNativeWind,
   useThemeStore,
 } from '@/store/useThemeStore';
-import { parseZhihuUrl } from '@/utils/url';
+import { isExpoInternalUrl, parseZhihuUrl } from '@/utils/url';
 import '../global.css';
 import * as Clipboard from 'expo-clipboard';
-import { AppState, type AppStateStatus } from 'react-native';
+import { AppState, type AppStateStatus, Linking } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Colors from '@/constants/Colors';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -107,10 +107,28 @@ function RootLayout() {
   const [clipboardUrl, setClipboardUrl] = useState('');
 
   const lastCheckedUrlRef = useRef<string | null>(null);
+  const pendingExternalPathRef = useRef<string | null>(null);
+
+  // Observe hot-start links for clipboard de-duplication. Expo Router owns navigation.
+  useEffect(() => {
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      if (isExpoInternalUrl(url)) return;
+
+      pendingExternalPathRef.current = parseZhihuUrl(url);
+      setClipboardModalVisible(false);
+    });
+
+    return () => subscription.remove();
+  }, []);
 
   // Check clipboard for Zhihu links when app becomes active
   useEffect(() => {
     const handleAppStateChange = async (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'background') {
+        pendingExternalPathRef.current = null;
+        return;
+      }
+
       if (nextAppState === 'active') {
         try {
           const hasText = await Clipboard.hasStringAsync();
@@ -128,6 +146,14 @@ function RootLayout() {
               );
               const url = urlMatch ? urlMatch[0] : null;
               if (url) {
+                const pendingExternalPath = pendingExternalPathRef.current;
+                pendingExternalPathRef.current = null;
+
+                if (parseZhihuUrl(url) === pendingExternalPath) {
+                  lastCheckedUrlRef.current = text;
+                  return;
+                }
+
                 setClipboardUrl(url);
                 setClipboardModalVisible(true);
               }
