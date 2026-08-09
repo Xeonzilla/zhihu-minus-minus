@@ -1,5 +1,13 @@
 import { Alert, Share } from 'react-native';
 
+let pendingAppClipboardText: string | null = null;
+
+export const consumeAppClipboardText = (text: string): boolean => {
+  const wasCopiedByApp = pendingAppClipboardText === text;
+  pendingAppClipboardText = null;
+  return wasCopiedByApp;
+};
+
 /**
  * Safely copy text to clipboard.
  * Prevents crashes if the native expo-clipboard module is missing.
@@ -8,11 +16,14 @@ export const copyToClipboard = async (
   text: string,
   successMessage: string = '已复制到剪贴板',
 ) => {
+  pendingAppClipboardText = null;
+
   try {
     // Dynamic require to avoid top-level import crash
     const Clipboard = require('expo-clipboard');
     if (Clipboard && typeof Clipboard.setStringAsync === 'function') {
       await Clipboard.setStringAsync(text);
+      pendingAppClipboardText = text;
       // We assume showToast is available or we use Alert
       return true;
     }

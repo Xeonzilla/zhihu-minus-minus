@@ -30,6 +30,7 @@ import { AppState, type AppStateStatus, Linking } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Colors from '@/constants/Colors';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { consumeAppClipboardText } from '@/utils/clipboard';
 
 Sentry.init({
   dsn: 'https://93a6099dd49b040d9c516485eb3c72f6@o4511051860672512.ingest.de.sentry.io/4511051866112080',
@@ -134,6 +135,11 @@ function RootLayout() {
           const hasText = await Clipboard.hasStringAsync();
           if (hasText) {
             const text = await Clipboard.getStringAsync();
+            if (text && consumeAppClipboardText(text)) {
+              lastCheckedUrlRef.current = text;
+              return;
+            }
+
             if (
               text &&
               text !== lastCheckedUrlRef.current &&
