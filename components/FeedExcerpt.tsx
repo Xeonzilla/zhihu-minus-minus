@@ -1,12 +1,9 @@
-import { useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
 import React, { useCallback, useMemo } from 'react';
+import { Linking } from 'react-native';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import {
-  extractZhihuRedirectTarget,
-  isInternalZhihuLink,
-  parseZhihuUrl,
-} from '@/utils/url';
+import { extractZhihuRedirectTarget, parseZhihuUrl } from '@/utils/url';
 import { Text, View } from './Themed';
 import { LinkCard } from './ZhihuContent';
 
@@ -80,10 +77,13 @@ export const FeedExcerpt: React.FC<{
     (url: string) => {
       if (!url) return;
       const realUrl = extractZhihuRedirectTarget(url);
-      if (!isInternalZhihuLink(realUrl)) return;
       const internalPath = parseZhihuUrl(realUrl);
       if (internalPath && internalPath !== '/') {
-        router.push(internalPath as any);
+        router.push(internalPath as Href);
+      } else {
+        Linking.openURL(realUrl).catch((err) =>
+          console.error('Failed to open URL:', err),
+        );
       }
     },
     [router],

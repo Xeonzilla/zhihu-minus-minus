@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
 import React, {
   useCallback,
   useEffect,
@@ -42,7 +42,6 @@ import { useSettingsStore } from '@/store/useSettingsStore';
 import { showToast } from '@/utils/toast';
 import {
   extractZhihuRedirectTarget,
-  isInternalZhihuLink,
   parseZhihuUrl,
 } from '@/utils/url';
 import { BouncyButton } from './BouncyButton';
@@ -88,22 +87,21 @@ export const LinkCard: React.FC<{
   surfaceColor: string;
   colorScheme: 'light' | 'dark';
 }> = React.memo(({ url, title, image, onPress, surfaceColor, colorScheme }) => {
-  const isInternal = url.includes('zhihu.com');
+  const internalPath = useMemo(() => parseZhihuUrl(url), [url]);
+  const isInternal = internalPath !== null;
   const primaryColor = useThemeColor({}, 'primary');
 
   const parsedId = useMemo(() => {
-    if (!url) return null;
-    const m = url.match(/zhihu\.com\/question\/(\d+)\/answer\/(\d+)/);
-    if (m) return { type: 'answer' as const, id: m[2] };
-    const qm = url.match(/zhihu\.com\/question\/(\d+)/);
-    if (qm && !url.includes('/answer/'))
-      return { type: 'question' as const, id: qm[1] };
-    const am = url.match(/zhuanlan\.zhihu\.com\/p\/(\d+)/);
-    if (am) return { type: 'article' as const, id: am[1] };
-    const pm = url.match(/zhihu\.com\/pin\/(\d+)/);
-    if (pm) return { type: 'pin' as const, id: pm[1] };
+    if (!internalPath) return null;
+    const match = internalPath.match(/^\/(question|answer|article|pin)\/(\d+)$/);
+    if (match) {
+      return {
+        type: match[1] as 'question' | 'answer' | 'article' | 'pin',
+        id: match[2],
+      };
+    }
     return null;
-  }, [url]);
+  }, [internalPath]);
 
   const { data: fetchedData } = useQuery({
     queryKey: ['linkcard', parsedId?.type, parsedId?.id],
@@ -544,16 +542,9 @@ export const ZhihuContent: React.FC<ZhihuContentProps> = React.memo(
         if (!url) return;
         // 先解码知乎跳转链接（link.zhihu.com?target=...），拿到真实 URL
         const realUrl = extractZhihuRedirectTarget(url);
-        // 非知乎链接直接用系统浏览器打开，不尝试 in-app 导航
-        if (!isInternalZhihuLink(realUrl)) {
-          Linking.openURL(realUrl).catch((err) =>
-            console.error('Failed to open URL:', err),
-          );
-          return;
-        }
         const internalPath = parseZhihuUrl(realUrl);
         if (internalPath && internalPath !== '/') {
-          router.push(internalPath as any);
+          router.push(internalPath as Href);
         } else {
           Linking.openURL(realUrl).catch((err) =>
             console.error('Failed to open URL:', err),
