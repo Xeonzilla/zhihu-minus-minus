@@ -6,7 +6,7 @@ import {
 import * as Sentry from '@sentry/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Constants from 'expo-constants';
-import { Stack, useRootNavigationState, useRouter } from 'expo-router';
+import { type Href, Stack, useRouter } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -26,7 +26,7 @@ import {
 import { parseZhihuUrl } from '@/utils/url';
 import '../global.css';
 import * as Clipboard from 'expo-clipboard';
-import { Alert, AppState, type AppStateStatus, Linking } from 'react-native';
+import { AppState, type AppStateStatus } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Colors from '@/constants/Colors';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -74,7 +74,12 @@ const queryClient = new QueryClient({
   },
 });
 
+export const unstable_settings = {
+  initialRouteName: '(tabs)',
+};
+
 function RootLayout() {
+  const router = useRouter();
   const _colorScheme = useColorScheme();
   const isDark = useThemeStore((state) => state.isDark);
   const theme = isDark ? DarkTheme : DefaultTheme;
@@ -98,78 +103,8 @@ function RootLayout() {
     enableAutoRotation();
   }, []);
 
-  const router = useRouter();
-  const rootNavigationState = useRootNavigationState();
-  const isReady = !!rootNavigationState?.key;
-
-  const [pendingUrl, setPendingUrl] = useState<string | null>(null);
-  const [isInitialUrl, setIsInitialUrl] = useState(false);
   const [clipboardModalVisible, setClipboardModalVisible] = useState(false);
   const [clipboardUrl, setClipboardUrl] = useState('');
-
-  // Handle deep links manually
-  useEffect(() => {
-    const handleUrl = (url: string | null) => {
-      if (!url) return;
-      // Skip internal Expo URLs
-      if (
-        url.includes('expo-development-client') ||
-        url.includes('expo-auth-session')
-      ) {
-        return;
-      }
-      setPendingUrl(url);
-    };
-
-    const subscription = Linking.addEventListener('url', (event) => {
-      handleUrl(event.url);
-    });
-
-    Linking.getInitialURL().then((url) => {
-      if (url) {
-        setIsInitialUrl(true);
-      }
-      handleUrl(url);
-    });
-
-    return () => {
-      subscription.remove();
-    };
-  }, []);
-
-  // Process pending URL when navigation is ready
-  useEffect(() => {
-    if (isReady && pendingUrl) {
-      const url = pendingUrl;
-      setPendingUrl(null); // Clear it
-
-      try {
-        const finalPath = parseZhihuUrl(url);
-        if (!finalPath) return;
-
-        console.log('[Deep Link] Processing URL:', url, '->', finalPath);
-
-        if (finalPath === '/') {
-          router.replace('/');
-          return;
-        }
-
-        if (isInitialUrl) {
-          console.log('[Deep Link] Cold start, setting home as root');
-          router.replace('/');
-          // Small delay to ensure replace completes before push
-          setTimeout(() => {
-            router.push(finalPath as any);
-          }, 100);
-          setIsInitialUrl(false);
-        } else {
-          router.push(finalPath as any);
-        }
-      } catch (err) {
-        console.error('[Deep Link] Navigation failed:', err);
-      }
-    }
-  }, [isReady, pendingUrl, isInitialUrl, router.push, router.replace]);
 
   const lastCheckedUrlRef = useRef<string | null>(null);
 
@@ -230,7 +165,10 @@ function RootLayout() {
               onClose={() => setClipboardModalVisible(false)}
               onOpen={() => {
                 setClipboardModalVisible(false);
-                setPendingUrl(clipboardUrl);
+                const path = parseZhihuUrl(clipboardUrl);
+                if (path) {
+                  router.push(path as Href);
+                }
               }}
             />
             <Stack
