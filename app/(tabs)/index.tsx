@@ -43,8 +43,15 @@ import { RecentMoments } from '@/components/RecentMoments';
 import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { feedSeenStorage } from '@/store/feedSeenStorage';
 import { useAuthStore } from '@/store/useAuthStore';
 import { type TabKey, useSettingsStore } from '@/store/useSettingsStore';
+import {
+  getFeedContentKey,
+  getFeedDedupScope,
+  getInMemoryFeedKey,
+  supportsPersistentFeedDedup,
+} from '@/utils/feedDedup';
 import { refreshInfiniteQuery } from '@/utils/query';
 import ProfileScreen from './profile';
 import PublishScreen from './publish';
@@ -63,6 +70,7 @@ const TABS = [
   'profile',
 ] as const;
 type TabType = (typeof TABS)[number];
+type FeedListItem = FeedItem | HotItem;
 
 export default function HomeScreen() {
   const { width: windowWidth } = useWindowDimensions();
@@ -616,11 +624,81 @@ const FeedList = React.forwardRef<
   }
 >(({ tab, insets, guestCookieReady, onScroll }, ref) => {
   const queryClient = useQueryClient();
-  const { cookies } = useAuthStore();
+  const { cookies, me } = useAuthStore();
+  const { enableLocalFeedDedup } = useSettingsStore();
   const colorScheme = useColorScheme();
   const tintColor = useThemeColor({}, 'primary');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const persistentDedupEnabled =
+    enableLocalFeedDedup && supportsPersistentFeedDedup(tab);
+  const accountKey = useMemo(() => {
+    const identity = me?.id || me?.url_token;
+    if (identity !== undefined && identity !== null && String(identity).trim()) {
+      return `account:${String(identity).trim()}`;
+    }
+    return cookies ? 'authenticated-pending' : 'guest';
+  }, [cookies, me]);
+  const dedupScope = useMemo(
+    () => getFeedDedupScope(accountKey, tab),
+    [accountKey, tab],
+  );
+  const [seenSnapshot, setSeenSnapshot] = useState<Set<string> | null>(() =>
+    persistentDedupEnabled ? null : new Set(),
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!persistentDedupEnabled) {
+      setSeenSnapshot(new Set());
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setSeenSnapshot(null);
+    void feedSeenStorage
+      .getSeenContentKeys(dedupScope)
+      .then((keys) => {
+        if (!cancelled) setSeenSnapshot(keys);
+      })
+      .catch((error) => {
+        console.warn('读取本地 Feed 去重记录失败', error);
+        if (!cancelled) setSeenSnapshot(new Set());
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dedupScope, persistentDedupEnabled]);
+
+  const trackingRef = useRef({
+    enabled: persistentDedupEnabled && seenSnapshot !== null,
+    scope: dedupScope,
+  });
+  trackingRef.current = {
+    enabled: persistentDedupEnabled && seenSnapshot !== null,
+    scope: dedupScope,
+  };
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 50,
+    minimumViewTime: 800,
+  }).current;
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: Array<{ item: FeedListItem }> }) => {
+      const { enabled, scope } = trackingRef.current;
+      if (!enabled) return;
+
+      const keys = viewableItems
+        .map((viewable) => getFeedContentKey(viewable.item))
+        .filter((key: string | null): key is string => Boolean(key));
+      if (keys.length > 0) {
+        void feedSeenStorage.markSeen(scope, keys).catch((error) => {
+          console.warn('记录本地 Feed 去重曝光失败', error);
+        });
+      }
+    },
+  ).current;
   const {
     data,
     fetchNextPage,
@@ -630,7 +708,7 @@ const FeedList = React.forwardRef<
     isRefetching,
     refetch,
   } = useInfiniteQuery({
-    queryKey: ['zhihu-feed', tab],
+    queryKey: ['zhihu-feed', accountKey, tab],
     queryFn: async ({ pageParam = (FEED_URLS as any)[tab] }) => {
       if (!cookies && tab === 'following') return { items: [], nextUrl: null };
       try {
@@ -657,28 +735,58 @@ const FeedList = React.forwardRef<
     },
     initialPageParam: (FEED_URLS as any)[tab],
     getNextPageParam: (lastPage) => lastPage.nextUrl,
-    enabled: !!cookies || guestCookieReady,
+    enabled:
+      (!!cookies || guestCookieReady) &&
+      (!persistentDedupEnabled || seenSnapshot !== null),
   });
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      await refreshInfiniteQuery(queryClient, ['zhihu-feed', tab], refetch);
+      if (persistentDedupEnabled) {
+        try {
+          const keys = await feedSeenStorage.getSeenContentKeys(dedupScope);
+          setSeenSnapshot(keys);
+        } catch (error) {
+          console.warn('刷新本地 Feed 去重记录失败', error);
+        }
+      }
+      await refreshInfiniteQuery(
+        queryClient,
+        ['zhihu-feed', accountKey, tab],
+        refetch,
+      );
     } finally {
       setIsRefreshing(false);
     }
-  }, [queryClient, tab, refetch]);
+  }, [
+    accountKey,
+    dedupScope,
+    persistentDedupEnabled,
+    queryClient,
+    refetch,
+    tab,
+  ]);
 
   const flattenedData = useMemo(() => {
     const all = data?.pages.flatMap((page) => page.items) ?? [];
-    const seen = new Set();
-    return all.filter((item: any) => {
-      const id = item?.id?.toString();
-      if (!id || seen.has(id)) return false;
-      seen.add(id);
+    const seen = new Set<string>();
+    return all.filter((item) => {
+      const inMemoryKey = getInMemoryFeedKey(item);
+      if (!inMemoryKey || seen.has(inMemoryKey)) return false;
+      seen.add(inMemoryKey);
+
+      const persistentKey = getFeedContentKey(item);
+      if (
+        persistentDedupEnabled &&
+        persistentKey &&
+        seenSnapshot?.has(persistentKey)
+      ) {
+        return false;
+      }
       return true;
     });
-  }, [data]);
+  }, [data, persistentDedupEnabled, seenSnapshot]);
 
   const flashListRef = useRef<any>(null);
 
@@ -692,11 +800,14 @@ const FeedList = React.forwardRef<
       ref={flashListRef}
       showsVerticalScrollIndicator={false}
       data={flattenedData}
-      keyExtractor={(item, index) =>
-        `feed-${item.id?.toString() || index}-${index}`
-      }
+      keyExtractor={(item, index) => {
+        const key = getInMemoryFeedKey(item);
+        return `feed-${key || index}`;
+      }}
       onEndReached={() => hasNextPage && !isFetchingNextPage && fetchNextPage()}
       onEndReachedThreshold={0.5}
+      onViewableItemsChanged={onViewableItemsChanged}
+      viewabilityConfig={viewabilityConfig}
       refreshControl={
         <RefreshControl
           refreshing={isRefreshing || isRefetching}
@@ -784,6 +895,7 @@ function parseFollowingData(item: RawFeedItem): FeedItem | null {
 function parseRecommendData(item: RawFeedItem): FeedItem {
   const target = (item.target || item) as any;
   const type = target.type;
+  const stableId = target.id?.toString().trim();
   let appType: 'answers' | 'articles' | 'pins' | 'questions' = 'answers';
   if (type === 'answer') appType = 'answers';
   else if (type === 'article') appType = 'articles';
@@ -791,7 +903,8 @@ function parseRecommendData(item: RawFeedItem): FeedItem {
   else if (type === 'question') appType = 'questions';
 
   return {
-    id: target.id?.toString() || Math.random().toString(),
+    id: stableId || Math.random().toString(),
+    isIdStable: Boolean(stableId),
     title: target.question?.title || target.title || '',
     questionId:
       target.question?.id?.toString() ||

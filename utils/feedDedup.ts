@@ -13,6 +13,7 @@ const FEED_TYPE_KEYS: Record<string, string> = {
 
 export interface FeedIdentitySource {
   id?: string | number | null;
+  isIdStable?: boolean;
   type?: string | null;
 }
 
@@ -21,6 +22,7 @@ export function supportsPersistentFeedDedup(tab: string): boolean {
 }
 
 export function getFeedContentKey(item: FeedIdentitySource): string | null {
+  if (item.isIdStable === false) return null;
   const id = item.id?.toString().trim();
   const type = item.type ? FEED_TYPE_KEYS[item.type] : undefined;
   if (!id || !type) return null;
