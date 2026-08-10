@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { FlashList } from '@shopify/flash-list';
+import { useIsFocused } from '@react-navigation/native';
+import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { BlurView } from 'expo-blur';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -77,6 +78,7 @@ export default function HomeScreen() {
   const containerWidth = Math.min(windowWidth - 40, 500);
 
   const insets = useSafeAreaInsets();
+  const isFocused = useIsFocused();
   const colorScheme = useColorScheme();
   const router = useRouter();
   const params = useLocalSearchParams<{ tab?: string }>();
@@ -412,6 +414,7 @@ export default function HomeScreen() {
                 <FeedList
                   ref={(el) => (listRefs.current[idx] = el)}
                   tab={tab as any}
+                  isActive={isFocused && currentPage === idx}
                   insets={insets}
                   guestCookieReady={guestCookieReady}
                   onScroll={(offset) => handleScrollUpdate(idx, offset)}
@@ -618,11 +621,12 @@ const FeedList = React.forwardRef<
   any,
   {
     tab: TabType;
+    isActive: boolean;
     insets: any;
     guestCookieReady: boolean;
     onScroll?: (offset: number) => void;
   }
->(({ tab, insets, guestCookieReady, onScroll }, ref) => {
+>(({ tab, isActive, insets, guestCookieReady, onScroll }, ref) => {
   const queryClient = useQueryClient();
   const { cookies, me } = useAuthStore();
   const { enableLocalFeedDedup } = useSettingsStore();
@@ -673,11 +677,13 @@ const FeedList = React.forwardRef<
   }, [dedupScope, persistentDedupEnabled]);
 
   const trackingRef = useRef({
-    enabled: persistentDedupEnabled && seenSnapshot !== null,
+    enabled:
+      isActive && persistentDedupEnabled && seenSnapshot !== null,
     scope: dedupScope,
   });
   trackingRef.current = {
-    enabled: persistentDedupEnabled && seenSnapshot !== null,
+    enabled:
+      isActive && persistentDedupEnabled && seenSnapshot !== null,
     scope: dedupScope,
   };
   const viewabilityConfig = useRef({
@@ -788,7 +794,16 @@ const FeedList = React.forwardRef<
     });
   }, [data, persistentDedupEnabled, seenSnapshot]);
 
-  const flashListRef = useRef<any>(null);
+  const flashListRef = useRef<FlashListRef<FeedListItem>>(null);
+
+  useEffect(() => {
+    if (!isActive || !persistentDedupEnabled || seenSnapshot === null) return;
+
+    const frame = requestAnimationFrame(() => {
+      flashListRef.current?.recomputeViewableItems();
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [isActive, persistentDedupEnabled, seenSnapshot]);
 
   React.useImperativeHandle(ref, () => ({
     scrollToOffset: (args: any) => flashListRef.current?.scrollToOffset(args),
