@@ -2,6 +2,28 @@
 
 特别的，由于 expo 官方的打包命令工具 `eas build --local` 强依赖 linux/macos 环境。所以 win 打包不能用这个，详见下方 `四、构建 APK`。
 
+文章大半在处理网络环境和安卓打包的常规问题，对于 windows 打包生产 apk 核心是下面这几行
+
+```bash
+# 1. 生成原生 Android 工程
+npx expo prebuild
+
+# 2. 禁用 Sentry 自动上传（本地没有 auth token 会卡住）
+$env:SENTRY_DISABLE_AUTO_UPLOAD = "true"; $env:SENTRY_NO_UPLOAD = "1"
+
+# 3. 编译打包 (指定 arm64 架构提速)
+cd android; .\gradlew.bat :app:assembleRelease -PreactNativeArchitectures=arm64-v8a
+
+```
+
+下文也有提到关于开发模式的运行，如果可以 
+
+```bash
+npm run android
+```
+
+这样可以的话，就不要使用原生安卓开发的那一套命令了。
+
 ---
 
 # Windows 本地构建 Android APK 指南

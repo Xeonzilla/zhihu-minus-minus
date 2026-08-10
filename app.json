@@ -2,7 +2,7 @@
   "expo": {
     "name": "知乎--",
     "slug": "ZhihuMinusMinus",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "zhihu--",
@@ -168,8 +168,8 @@
           "基础稳定性优化: 修复了若干 UI 细节与已知的小概率崩溃问题。"
         ]
       },
-      "status": "🚀 v0.2.0 - 核心功能与导航架构迭代完成",
-      "lastUpdated": "2026-08-03",
+      "status": "🚀 v0.2.1 - 核心功能与导航架构迭代完成",
+      "lastUpdated": "2026-08-10",
       "eas": {
         "projectId": "faa0f061-50e6-4ec4-bb6f-accda0dbd24f"
       }
