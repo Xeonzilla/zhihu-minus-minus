@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   LayoutAnimation,
   PanResponder,
   Platform,
@@ -18,7 +19,9 @@ import { BouncyButton } from '@/components/BouncyButton';
 import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { feedSeenStorage } from '@/store/feedSeenStorage';
 import { type TabKey, useSettingsStore } from '@/store/useSettingsStore';
+import { showToast } from '@/utils/toast';
 
 // 开启 Android 下的 LayoutAnimation
 if (
@@ -58,6 +61,7 @@ export default function AppearanceSettings() {
     useWebView,
     enablePrivateMessaging,
     enableBrowseHistory,
+    enableLocalFeedDedup,
     pressOpacity,
     pressScale,
     androidFeedbackType,
@@ -563,6 +567,52 @@ export default function AppearanceSettings() {
               }
               trackColor={{ true: tintColor }}
             />
+          </SettingItem>
+          <SettingItem
+            label="本地 Feed 去重"
+            icon="layers-outline"
+            colorScheme={colorScheme}
+          >
+            <Switch
+              value={enableLocalFeedDedup}
+              onValueChange={(val) =>
+                updateSettings({ enableLocalFeedDedup: val })
+              }
+              trackColor={{ true: tintColor }}
+            />
+          </SettingItem>
+          <SettingItem
+            label="清除本地去重记录"
+            icon="trash-bin-outline"
+            colorScheme={colorScheme}
+          >
+            <Pressable
+              onPress={() => {
+                Alert.alert(
+                  '清除本地去重记录',
+                  '清除后，近期看过的推荐内容可能再次出现。',
+                  [
+                    { text: '取消', style: 'cancel' },
+                    {
+                      text: '清除',
+                      style: 'destructive',
+                      onPress: async () => {
+                        try {
+                          await feedSeenStorage.clear();
+                          showToast('本地去重记录已清除');
+                        } catch (error) {
+                          console.error('清除本地去重记录失败', error);
+                          showToast('清除失败，请稍后重试');
+                        }
+                      },
+                    },
+                  ],
+                );
+              }}
+              className="px-3 py-1.5"
+            >
+              <Text style={{ color: Colors[colorScheme].danger }}>清除</Text>
+            </Pressable>
           </SettingItem>
         </Section>
 
