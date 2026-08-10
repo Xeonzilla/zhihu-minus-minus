@@ -15,6 +15,7 @@ export async function refreshInfiniteQuery(
   queryKey: any[],
   refetch: () => Promise<any>,
 ) {
+  const promise = refetch();
   queryClient.setQueryData(queryKey, (oldData: any) => {
     if (!oldData) return oldData;
     return {
@@ -22,5 +23,5 @@ export async function refreshInfiniteQuery(
       pageParams: oldData.pageParams.slice(0, 1),
     };
   });
-  return refetch();
+  return promise;
 }

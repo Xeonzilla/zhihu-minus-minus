@@ -619,6 +619,8 @@ const FeedList = React.forwardRef<
   const { cookies } = useAuthStore();
   const colorScheme = useColorScheme();
   const tintColor = useThemeColor({}, 'primary');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   const {
     data,
     fetchNextPage,
@@ -658,8 +660,13 @@ const FeedList = React.forwardRef<
     enabled: !!cookies || guestCookieReady,
   });
 
-  const handleRefresh = useCallback(() => {
-    return refreshInfiniteQuery(queryClient, ['zhihu-feed', tab], refetch);
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshInfiniteQuery(queryClient, ['zhihu-feed', tab], refetch);
+    } finally {
+      setIsRefreshing(false);
+    }
   }, [queryClient, tab, refetch]);
 
   const flattenedData = useMemo(() => {
@@ -692,7 +699,7 @@ const FeedList = React.forwardRef<
       onEndReachedThreshold={0.5}
       refreshControl={
         <RefreshControl
-          refreshing={isRefetching}
+          refreshing={isRefreshing || isRefetching}
           onRefresh={handleRefresh}
           tintColor={tintColor}
           colors={[tintColor]}
