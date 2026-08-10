@@ -1,3 +1,10 @@
+export function isExpoInternalUrl(url: string): boolean {
+  return (
+    url.includes('expo-development-client') ||
+    url.includes('expo-auth-session')
+  );
+}
+
 /**
  * 解析并规范化知乎链接，将其转换为应用内的路由路径
  * @param url 原始 URL (可以是 http/https 链接，也可以是 deep link)
