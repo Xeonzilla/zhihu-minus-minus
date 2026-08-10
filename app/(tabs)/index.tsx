@@ -44,15 +44,20 @@ import { RecentMoments } from '@/components/RecentMoments';
 import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import { feedSeenStorage } from '@/store/feedSeenStorage';
+import {
+  feedExposureRepository,
+  type FeedExposureContext,
+} from '@/storage/feedExposureRepository';
 import { useAuthStore } from '@/store/useAuthStore';
 import { type TabKey, useSettingsStore } from '@/store/useSettingsStore';
+import { supportsLocalFeedDedup } from '@/utils/feedDedup';
 import {
+  type FeedContentIdentity,
+  getFeedContentIdentity,
   getFeedContentKey,
-  getFeedDedupScope,
   getInMemoryFeedKey,
-  supportsPersistentFeedDedup,
-} from '@/utils/feedDedup';
+} from '@/utils/feedIdentity';
+import { resolveLocalAccountKey } from '@/utils/localAccount';
 import { refreshInfiniteQuery } from '@/utils/query';
 import ProfileScreen from './profile';
 import PublishScreen from './publish';
@@ -634,57 +639,63 @@ const FeedList = React.forwardRef<
   const tintColor = useThemeColor({}, 'primary');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const persistentDedupEnabled =
-    enableLocalFeedDedup && supportsPersistentFeedDedup(tab);
-  const accountKey = useMemo(() => {
-    const identity = me?.id || me?.url_token;
-    if (identity !== undefined && identity !== null && String(identity).trim()) {
-      return `account:${String(identity).trim()}`;
-    }
-    return cookies ? 'authenticated-pending' : 'guest';
-  }, [cookies, me]);
-  const dedupScope = useMemo(
-    () => getFeedDedupScope(accountKey, tab),
-    [accountKey, tab],
+  const localAccountKey = useMemo(
+    () => resolveLocalAccountKey(me, Boolean(cookies)),
+    [cookies, me],
   );
-  const [seenSnapshot, setSeenSnapshot] = useState<Set<string> | null>(() =>
-    persistentDedupEnabled ? null : new Set(),
-  );
+  const queryAccountKey = localAccountKey ?? 'authenticated-pending';
+  const localDedupEnabled =
+    enableLocalFeedDedup &&
+    supportsLocalFeedDedup(tab) &&
+    localAccountKey !== null;
+  const exposureContext = useMemo<FeedExposureContext | null>(() => {
+    if (!localAccountKey) return null;
+    return { accountKey: localAccountKey, feedType: tab };
+  }, [localAccountKey, tab]);
+  const [recentExposureKeys, setRecentExposureKeys] = useState<
+    Set<string> | null
+  >(() => (localDedupEnabled ? null : new Set()));
 
   useEffect(() => {
     let cancelled = false;
-    if (!persistentDedupEnabled) {
-      setSeenSnapshot(new Set());
+    if (!localDedupEnabled || !exposureContext) {
+      setRecentExposureKeys(new Set());
       return () => {
         cancelled = true;
       };
     }
 
-    setSeenSnapshot(null);
-    void feedSeenStorage
-      .getSeenContentKeys(dedupScope)
+    setRecentExposureKeys(null);
+    void feedExposureRepository
+      .getRecentContentKeys(exposureContext)
       .then((keys) => {
-        if (!cancelled) setSeenSnapshot(keys);
+        if (!cancelled) setRecentExposureKeys(keys);
       })
       .catch((error) => {
-        console.warn('读取本地 Feed 去重记录失败', error);
-        if (!cancelled) setSeenSnapshot(new Set());
+        console.warn('读取本地 Feed 曝光记录失败', error);
+        if (!cancelled) setRecentExposureKeys(new Set());
       });
 
     return () => {
       cancelled = true;
     };
-  }, [dedupScope, persistentDedupEnabled]);
+  }, [exposureContext, localDedupEnabled]);
 
-  const trackingRef = useRef({
+  const exposureTrackingRef = useRef({
     enabled:
-      isActive && persistentDedupEnabled && seenSnapshot !== null,
-    scope: dedupScope,
+      isActive &&
+      localDedupEnabled &&
+      exposureContext !== null &&
+      recentExposureKeys !== null,
+    context: exposureContext,
   });
-  trackingRef.current = {
+  exposureTrackingRef.current = {
     enabled:
-      isActive && persistentDedupEnabled && seenSnapshot !== null,
-    scope: dedupScope,
+      isActive &&
+      localDedupEnabled &&
+      exposureContext !== null &&
+      recentExposureKeys !== null,
+    context: exposureContext,
   };
   const viewabilityConfig = useRef({
     itemVisiblePercentThreshold: 50,
@@ -692,16 +703,20 @@ const FeedList = React.forwardRef<
   }).current;
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: Array<{ item: FeedListItem }> }) => {
-      const { enabled, scope } = trackingRef.current;
-      if (!enabled) return;
+      const { enabled, context } = exposureTrackingRef.current;
+      if (!enabled || !context) return;
 
-      const keys = viewableItems
-        .map((viewable) => getFeedContentKey(viewable.item))
-        .filter((key: string | null): key is string => Boolean(key));
-      if (keys.length > 0) {
-        void feedSeenStorage.markSeen(scope, keys).catch((error) => {
-          console.warn('记录本地 Feed 去重曝光失败', error);
-        });
+      const identities = viewableItems
+        .map((viewable) => getFeedContentIdentity(viewable.item))
+        .filter(
+          (identity): identity is FeedContentIdentity => identity !== null,
+        );
+      if (identities.length > 0) {
+        void feedExposureRepository
+          .recordExposures(context, identities)
+          .catch((error) => {
+            console.warn('记录本地 Feed 曝光失败', error);
+          });
       }
     },
   ).current;
@@ -714,7 +729,7 @@ const FeedList = React.forwardRef<
     isRefetching,
     refetch,
   } = useInfiniteQuery({
-    queryKey: ['zhihu-feed', accountKey, tab],
+    queryKey: ['zhihu-feed', queryAccountKey, tab],
     queryFn: async ({ pageParam = (FEED_URLS as any)[tab] }) => {
       if (!cookies && tab === 'following') return { items: [], nextUrl: null };
       try {
@@ -743,33 +758,34 @@ const FeedList = React.forwardRef<
     getNextPageParam: (lastPage) => lastPage.nextUrl,
     enabled:
       (!!cookies || guestCookieReady) &&
-      (!persistentDedupEnabled || seenSnapshot !== null),
+      (!localDedupEnabled || recentExposureKeys !== null),
   });
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      if (persistentDedupEnabled) {
+      if (localDedupEnabled && exposureContext) {
         try {
-          const keys = await feedSeenStorage.getSeenContentKeys(dedupScope);
-          setSeenSnapshot(keys);
+          const keys =
+            await feedExposureRepository.getRecentContentKeys(exposureContext);
+          setRecentExposureKeys(keys);
         } catch (error) {
-          console.warn('刷新本地 Feed 去重记录失败', error);
+          console.warn('刷新本地 Feed 曝光记录失败', error);
         }
       }
       await refreshInfiniteQuery(
         queryClient,
-        ['zhihu-feed', accountKey, tab],
+        ['zhihu-feed', queryAccountKey, tab],
         refetch,
       );
     } finally {
       setIsRefreshing(false);
     }
   }, [
-    accountKey,
-    dedupScope,
-    persistentDedupEnabled,
+    exposureContext,
+    localDedupEnabled,
     queryClient,
+    queryAccountKey,
     refetch,
     tab,
   ]);
@@ -784,26 +800,26 @@ const FeedList = React.forwardRef<
 
       const persistentKey = getFeedContentKey(item);
       if (
-        persistentDedupEnabled &&
+        localDedupEnabled &&
         persistentKey &&
-        seenSnapshot?.has(persistentKey)
+        recentExposureKeys?.has(persistentKey)
       ) {
         return false;
       }
       return true;
     });
-  }, [data, persistentDedupEnabled, seenSnapshot]);
+  }, [data, localDedupEnabled, recentExposureKeys]);
 
   const flashListRef = useRef<FlashListRef<FeedListItem>>(null);
 
   useEffect(() => {
-    if (!isActive || !persistentDedupEnabled || seenSnapshot === null) return;
+    if (!isActive || !localDedupEnabled || recentExposureKeys === null) return;
 
     const frame = requestAnimationFrame(() => {
       flashListRef.current?.recomputeViewableItems();
     });
     return () => cancelAnimationFrame(frame);
-  }, [isActive, persistentDedupEnabled, seenSnapshot]);
+  }, [isActive, localDedupEnabled, recentExposureKeys]);
 
   React.useImperativeHandle(ref, () => ({
     scrollToOffset: (args: any) => flashListRef.current?.scrollToOffset(args),

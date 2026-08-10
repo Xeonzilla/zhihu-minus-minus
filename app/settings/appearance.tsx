@@ -19,7 +19,7 @@ import { BouncyButton } from '@/components/BouncyButton';
 import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import { feedSeenStorage } from '@/store/feedSeenStorage';
+import { feedExposureRepository } from '@/storage/feedExposureRepository';
 import { type TabKey, useSettingsStore } from '@/store/useSettingsStore';
 import { showToast } from '@/utils/toast';
 
@@ -598,7 +598,7 @@ export default function AppearanceSettings() {
                       style: 'destructive',
                       onPress: async () => {
                         try {
-                          await feedSeenStorage.clear();
+                          await feedExposureRepository.clearAll();
                           showToast('本地去重记录已清除');
                         } catch (error) {
                           console.error('清除本地去重记录失败', error);
