@@ -30,6 +30,9 @@ const MIGRATIONS: DatabaseMigration[] = [
           feed_type,
           last_exposed_at DESC
         );
+      -- Not used by dedup queries today. Kept for future cross-feed lookups
+      -- of the form "has this account seen content X in any feed", which
+      -- local recommendation filtering is expected to need.
       CREATE INDEX recent_feed_exposures_account_content_idx
         ON recent_feed_exposures (
           account_key,

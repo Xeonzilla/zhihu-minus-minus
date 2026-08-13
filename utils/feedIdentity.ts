@@ -1,3 +1,11 @@
+/**
+ * Canonical content identity for locally stored data.
+ *
+ * A persistent content key is `<contentType>:<contentId>` with the singular
+ * content type (e.g. "answer:12345"). All future local features (local
+ * recommendations, filtering rules, behavior signals) must reuse this
+ * vocabulary so their records stay joinable with the exposure data.
+ */
 const FEED_CONTENT_TYPE_ALIASES: Record<string, string> = {
   answer: 'answer',
   answers: 'answer',
