@@ -23,6 +23,7 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
   useSharedValue,
+  withRepeat,
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
@@ -137,7 +138,20 @@ export default function HomeScreen() {
   }, [params.tab, currentTabs, currentPage]);
 
   const [scrolledTabs, setScrolledTabs] = useState<Record<number, boolean>>({});
+  const [refreshingTabs, setRefreshingTabs] = useState<Record<number, boolean>>({});
   const listRefs = useRef<any[]>([]);
+
+  const handleRefreshStateChange = useCallback(
+    (pageIndex: number, isRefreshing: boolean) => {
+      setRefreshingTabs((prev) => {
+        if (prev[pageIndex] === isRefreshing) return prev;
+        return { ...prev, [pageIndex]: isRefreshing };
+      });
+    },
+    [],
+  );
+
+  const isCurrentRefreshing = refreshingTabs[currentPage] || false;
 
   const SCROLL_THRESHOLD_SHOW = 300;
   const SCROLL_THRESHOLD_HIDE = 200;
@@ -357,9 +371,14 @@ export default function HomeScreen() {
               onPress={() => router.push('/search')}
               style={styles.searchBtn}
             >
-              <Ionicons name="search" size={22} color={textColor} />
+              {isCurrentRefreshing ? (
+                <ActivityIndicator size="small" color={tintColor} />
+              ) : (
+                <Ionicons name="search" size={22} color={textColor} />
+              )}
             </Pressable>
           </View>
+          {isCurrentRefreshing && <TopLoadingBar color={tintColor} />}
         </BlurView>
       </Animated.View>
 
@@ -383,6 +402,9 @@ export default function HomeScreen() {
                   ref={(el) => (listRefs.current[idx] = el)}
                   insets={insets}
                   onScroll={(offset) => handleScrollUpdate(idx, offset)}
+                  onRefreshStateChange={(isRefreshing) =>
+                    handleRefreshStateChange(idx, isRefreshing)
+                  }
                 />
               ) : tab === 'publish' ? (
                 <PublishScreen />
@@ -407,6 +429,9 @@ export default function HomeScreen() {
                   insets={insets}
                   guestCookieReady={guestCookieReady}
                   onScroll={(offset) => handleScrollUpdate(idx, offset)}
+                  onRefreshStateChange={(isRefreshing) =>
+                    handleRefreshStateChange(idx, isRefreshing)
+                  }
                 />
               )}
             </View>
@@ -613,8 +638,9 @@ const FeedList = React.forwardRef<
     insets: any;
     guestCookieReady: boolean;
     onScroll?: (offset: number) => void;
+    onRefreshStateChange?: (isRefreshing: boolean) => void;
   }
->(({ tab, insets, guestCookieReady, onScroll }, ref) => {
+>(({ tab, insets, guestCookieReady, onScroll, onRefreshStateChange }, ref) => {
   const queryClient = useQueryClient();
   const { cookies } = useAuthStore();
   const colorScheme = useColorScheme();
@@ -662,12 +688,15 @@ const FeedList = React.forwardRef<
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
+    onRefreshStateChange?.(true);
     try {
       await refreshInfiniteQuery(queryClient, ['zhihu-feed', tab], refetch);
+    } catch (_e) {
     } finally {
       setIsRefreshing(false);
+      onRefreshStateChange?.(false);
     }
-  }, [queryClient, tab, refetch]);
+  }, [queryClient, tab, refetch, onRefreshStateChange]);
 
   const flattenedData = useMemo(() => {
     const all = data?.pages.flatMap((page) => page.items) ?? [];
@@ -697,13 +726,15 @@ const FeedList = React.forwardRef<
       }
       onEndReached={() => hasNextPage && !isFetchingNextPage && fetchNextPage()}
       onEndReachedThreshold={0.5}
+      onRefresh={handleRefresh}
+      refreshing={isRefreshing || isRefetching}
       refreshControl={
         <RefreshControl
           refreshing={isRefreshing || isRefetching}
           onRefresh={handleRefresh}
           tintColor={tintColor}
           colors={[tintColor]}
-          progressViewOffset={insets.top + 70}
+          progressViewOffset={insets.top + 10}
         />
       }
       onScroll={(e) => onScroll?.(e.nativeEvent.contentOffset.y)}
@@ -938,3 +969,41 @@ const styles = StyleSheet.create({
   loginBtn: { paddingHorizontal: 40, paddingVertical: 12, borderRadius: 25 },
   loginBtnText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
 });
+
+function TopLoadingBar({ color }: { color: string }) {
+  const anim = useSharedValue(0);
+
+  useEffect(() => {
+    anim.value = withRepeat(withTiming(1, { duration: 1000 }), -1, false);
+  }, [anim]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    const translateX = interpolate(anim.value, [0, 1], [-150, 300]);
+    return {
+      transform: [{ translateX }],
+    };
+  });
+
+  return (
+    <View
+      style={{
+        height: 2.5,
+        width: '100%',
+        backgroundColor: 'rgba(0,0,0,0.06)',
+        overflow: 'hidden',
+      }}
+    >
+      <Animated.View
+        style={[
+          {
+            width: 120,
+            height: 2.5,
+            backgroundColor: color,
+            borderRadius: 1.25,
+          },
+          animatedStyle,
+        ]}
+      />
+    </View>
+  );
+}

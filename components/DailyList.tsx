@@ -93,10 +93,15 @@ const SkeletonCard = () => {
 
 export const DailyList = React.forwardRef<
   any,
-  { insets: any; onScroll?: (offset: number) => void }
->(({ insets, onScroll }, ref) => {
+  {
+    insets: any;
+    onScroll?: (offset: number) => void;
+    onRefreshStateChange?: (isRefreshing: boolean) => void;
+  }
+>(({ insets, onScroll, onRefreshStateChange }, ref) => {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
 
   const {
     data,
@@ -118,9 +123,17 @@ export const DailyList = React.forwardRef<
     getNextPageParam: (lastPage) => lastPage.date,
   });
 
-  const handleRefresh = useCallback(() => {
-    return refreshInfiniteQuery(queryClient, ['zhihu-daily'], refetch);
-  }, [queryClient, refetch]);
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    onRefreshStateChange?.(true);
+    try {
+      await refreshInfiniteQuery(queryClient, ['zhihu-daily'], refetch);
+    } catch (_e) {
+    } finally {
+      setIsRefreshing(false);
+      onRefreshStateChange?.(false);
+    }
+  }, [queryClient, refetch, onRefreshStateChange]);
 
   const flattenedData = useMemo(() => {
     if (!data) return [];
@@ -172,6 +185,8 @@ export const DailyList = React.forwardRef<
     );
   }
 
+  const showRefreshing = isRefreshing || isRefetching;
+
   return (
     <View className="flex-1">
       <FlashList
@@ -187,7 +202,7 @@ export const DailyList = React.forwardRef<
         }
         onEndReachedThreshold={0.5}
         onRefresh={handleRefresh}
-        refreshing={isRefetching}
+        refreshing={showRefreshing}
         onScroll={(e) => onScroll?.(e.nativeEvent.contentOffset.y)}
         scrollEventThrottle={16}
         contentContainerStyle={{
