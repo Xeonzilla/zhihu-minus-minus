@@ -43,11 +43,12 @@ import { formatDate } from '@/utils/date';
 import { showToast } from '@/utils/toast';
 
 export default function CommentScreen() {
-  const { id, type, segmentId, count } = useLocalSearchParams<{
+  const { id, type, segmentId, count, text } = useLocalSearchParams<{
     id: string;
     type: string;
     segmentId?: string;
     count?: string;
+    text?: string;
   }>();
   const router = useRouter();
   const [inputText, setInputText] = useState('');
@@ -357,6 +358,57 @@ export default function CommentScreen() {
             paddingBottom: INPUT_BAR_HEIGHT + insets.bottom + 20,
             paddingTop: 8,
           }}
+          ListHeaderComponent={
+            text ? (
+              <View
+                style={{
+                  backgroundColor: surfaceColor,
+                  borderWidth: StyleSheet.hairlineWidth,
+                  borderColor: borderColor,
+                  paddingHorizontal: 14,
+                  paddingVertical: 10,
+                  marginBottom: 10,
+                  borderRadius: 14,
+                  marginHorizontal: 14,
+                  marginTop: 6,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.05,
+                  shadowRadius: 4,
+                  elevation: 2,
+                }}
+              >
+                <View className="flex-row items-center mb-1 bg-transparent">
+                  <Ionicons
+                    name="chatbox-ellipses-outline"
+                    size={14}
+                    color={tintColor}
+                  />
+                  <Text
+                    style={{
+                      color: tintColor,
+                      fontSize: 12,
+                      fontWeight: '700',
+                      marginLeft: 5,
+                    }}
+                  >
+                    正在讨论
+                  </Text>
+                </View>
+                <Text
+                  numberOfLines={4}
+                  style={{
+                    fontSize: 13.5,
+                    lineHeight: 19,
+                    color: textColor,
+                    opacity: 0.9,
+                  }}
+                >
+                  "{text}"
+                </Text>
+              </View>
+            ) : null
+          }
           ListFooterComponent={
             isFetchingNextPage ? (
               <View className="py-4 items-center bg-transparent">
