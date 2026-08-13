@@ -92,7 +92,8 @@ export const useSettingsStore = create<SettingsState>()(
             nextSettings.visibleTabs &&
             !nextSettings.visibleTabs.includes(nextSettings.defaultTab)
           ) {
-            nextSettings.defaultTab = nextSettings.visibleTabs[0] || 'recommend';
+            nextSettings.defaultTab =
+              nextSettings.visibleTabs[0] || 'recommend';
           }
           // 兜底：非法 hex 颜色退回默认（null）
           nextSettings.primaryColor = sanitizeColor(nextSettings.primaryColor);

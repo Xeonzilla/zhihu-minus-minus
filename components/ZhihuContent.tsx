@@ -40,10 +40,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { showToast } from '@/utils/toast';
-import {
-  extractZhihuRedirectTarget,
-  parseZhihuUrl,
-} from '@/utils/url';
+import { extractZhihuRedirectTarget, parseZhihuUrl } from '@/utils/url';
 import { BouncyButton } from './BouncyButton';
 import { Text, useThemeColor, View } from './Themed';
 import ZhihuDOMContent, { type TextSelectionInfo } from './ZhihuDOMContent';
@@ -93,7 +90,9 @@ export const LinkCard: React.FC<{
 
   const parsedId = useMemo(() => {
     if (!internalPath) return null;
-    const match = internalPath.match(/^\/(question|answer|article|pin)\/(\d+)$/);
+    const match = internalPath.match(
+      /^\/(question|answer|article|pin)\/(\d+)$/,
+    );
     if (match) {
       return {
         type: match[1] as 'question' | 'answer' | 'article' | 'pin',
@@ -229,12 +228,12 @@ function sliceParagraphText(
     const { start_index, end_index } = mark;
     const interaction =
       mark.seg_info?.like_count ||
-        mark.seg_info?.comment_count ||
-        mark.seg_info?.is_like
+      mark.seg_info?.comment_count ||
+      mark.seg_info?.is_like
         ? mark.seg_info
         : mark.master_seg_info?.like_count ||
-          mark.master_seg_info?.comment_count ||
-          mark.master_seg_info?.is_like
+            mark.master_seg_info?.comment_count ||
+            mark.master_seg_info?.is_like
           ? mark.master_seg_info
           : null;
 
@@ -1177,7 +1176,9 @@ export const ZhihuContent: React.FC<ZhihuContentProps> = React.memo(
                           const queryParams = [
                             `type=${type}`,
                             segId ? `segmentId=${segId}` : null,
-                            segText ? `text=${encodeURIComponent(segText)}` : null,
+                            segText
+                              ? `text=${encodeURIComponent(segText)}`
+                              : null,
                           ]
                             .filter(Boolean)
                             .join('&');
@@ -1217,7 +1218,9 @@ export const ZhihuContent: React.FC<ZhihuContentProps> = React.memo(
                         }
                         const queryParams = [
                           `type=${type}`,
-                          segText ? `text=${encodeURIComponent(segText)}` : null,
+                          segText
+                            ? `text=${encodeURIComponent(segText)}`
+                            : null,
                         ]
                           .filter(Boolean)
                           .join('&');

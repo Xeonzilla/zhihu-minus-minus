@@ -206,4 +206,3 @@ export interface ZhihuPaging {
   previous?: string;
   totals?: number;
 }
-
