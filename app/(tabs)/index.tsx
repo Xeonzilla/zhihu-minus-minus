@@ -142,6 +142,20 @@ export default function HomeScreen() {
   const [currentPage, setCurrentPage] = useState(initialPageIndex);
   const [guestCookieReady, setGuestCookieReady] = useState(false);
 
+  // 懒加载 Tab 标签页记录：仅在访问过的 Tab 渲染对应组件，避免冷启动时并发请求所有 Tab 的接口
+  const [visitedPages, setVisitedPages] = useState<Set<number>>(
+    () => new Set([initialPageIndex]),
+  );
+
+  useEffect(() => {
+    setVisitedPages((prev) => {
+      if (prev.has(currentPage)) return prev;
+      const next = new Set(prev);
+      next.add(currentPage);
+      return next;
+    });
+  }, [currentPage]);
+
   // 监听 params.tab 变化并切换页面
   useEffect(() => {
     if (params.tab) {
@@ -413,9 +427,10 @@ export default function HomeScreen() {
         }}
       >
         {currentTabs.map((tab, idx) => {
+          const isVisited = visitedPages.has(idx);
           return (
             <View key={tab} style={{ flex: 1, backgroundColor: 'transparent' }}>
-              {tab === 'daily' ? (
+              {!isVisited ? null : tab === 'daily' ? (
                 <DailyList
                   ref={(el) => (listRefs.current[idx] = el)}
                   insets={insets}

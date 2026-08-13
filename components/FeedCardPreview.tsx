@@ -45,6 +45,7 @@ export function FeedCardPreview({ item }: FeedCardPreviewProps) {
       return null;
     },
     staleTime: 5 * 60 * 1000,
+    retry: false,
   });
 
   return (
