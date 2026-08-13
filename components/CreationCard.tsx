@@ -347,17 +347,17 @@ export const CreationCard = React.forwardRef(
               <LikeButton
                 id={item.id}
                 count={
-                  item.reaction?.statistics?.like_count ??
+                  item.voteCount ??
                   item.voteup_count ??
-                  item.reaction_count ??
+                  (type === 'pin'
+                    ? item.reaction_count || item.like_count
+                    : 0) ??
                   0
                 }
                 voted={
-                  item.relationship?.voting !== undefined
-                    ? item.relationship.voting
-                    : item.reaction?.relation?.liked
-                      ? 1
-                      : 0
+                  item.voted !== undefined
+                    ? item.voted
+                    : item.relationship?.voting || 0
                 }
                 type={
                   type === 'article'
