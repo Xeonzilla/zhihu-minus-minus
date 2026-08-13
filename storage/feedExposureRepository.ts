@@ -26,6 +26,10 @@ interface ExposureContextRow {
   feed_type: string;
 }
 
+interface CountRow {
+  count: number;
+}
+
 /**
  * Bounded recent exposure state used by local Feed deduplication.
  *
@@ -120,7 +124,7 @@ class FeedExposureRepository {
           );
         }
 
-        await this.prune(database, now, context);
+        await this.pruneContextIfNeeded(database, context);
       });
     });
   }
@@ -146,7 +150,7 @@ class FeedExposureRepository {
   private async ensureMaintained(): Promise<void> {
     if (!this.maintenancePromise) {
       this.maintenancePromise = localDatabase
-        .run((database) => this.prune(database, Date.now()))
+        .run((database) => this.maintain(database, Date.now()))
         .catch((error) => {
           this.maintenancePromise = null;
           throw error;
@@ -159,51 +163,35 @@ class FeedExposureRepository {
     return Boolean(context.accountKey.trim() && context.feedType.trim());
   }
 
-  private async prune(
-    database: SQLiteDatabase,
-    now: number,
-    changedContext?: FeedExposureContext,
-  ): Promise<void> {
+  /**
+   * Full maintenance pass, run once per app launch. Retention and the global
+   * cap are only enforced here; between launches the per-context cap bounds
+   * table growth, and reads filter by timestamp so stale rows are inert.
+   */
+  private async maintain(database: SQLiteDatabase, now: number): Promise<void> {
     await database.runAsync(
       'DELETE FROM recent_feed_exposures WHERE last_exposed_at < ?',
       [now - FEED_EXPOSURE_RETENTION_MS],
     );
 
-    const contexts = changedContext
-      ? [
-          {
-            account_key: changedContext.accountKey,
-            feed_type: changedContext.feedType,
-          },
-        ]
-      : await database.getAllAsync<ExposureContextRow>(
-          `SELECT account_key, feed_type
-           FROM recent_feed_exposures
-           GROUP BY account_key, feed_type
-           HAVING COUNT(*) > ?`,
-          [MAX_FEED_EXPOSURES_PER_CONTEXT],
-        );
-
-    for (const context of contexts) {
-      await database.runAsync(
-        `DELETE FROM recent_feed_exposures
-         WHERE rowid IN (
-           SELECT rowid
-           FROM recent_feed_exposures
-           WHERE account_key = ? AND feed_type = ?
-           ORDER BY
-             last_exposed_at DESC,
-             content_type DESC,
-             content_id DESC
-           LIMIT -1 OFFSET ?
-         )`,
-        [
-          context.account_key,
-          context.feed_type,
-          MAX_FEED_EXPOSURES_PER_CONTEXT,
-        ],
-      );
+    const oversizedContexts = await database.getAllAsync<ExposureContextRow>(
+      `SELECT account_key, feed_type
+       FROM recent_feed_exposures
+       GROUP BY account_key, feed_type
+       HAVING COUNT(*) > ?`,
+      [MAX_FEED_EXPOSURES_PER_CONTEXT],
+    );
+    for (const context of oversizedContexts) {
+      await this.trimContext(database, {
+        accountKey: context.account_key,
+        feedType: context.feed_type,
+      });
     }
+
+    const totalRow = await database.getFirstAsync<CountRow>(
+      'SELECT COUNT(*) AS count FROM recent_feed_exposures',
+    );
+    if ((totalRow?.count ?? 0) <= MAX_FEED_EXPOSURES) return;
 
     await database.runAsync(
       `DELETE FROM recent_feed_exposures
@@ -219,6 +207,44 @@ class FeedExposureRepository {
          LIMIT -1 OFFSET ?
        )`,
       [MAX_FEED_EXPOSURES],
+    );
+  }
+
+  /**
+   * Hot-path cap check for the context that just received writes. The COUNT
+   * probe is index-only; the expensive trim runs only past the cap.
+   */
+  private async pruneContextIfNeeded(
+    database: SQLiteDatabase,
+    context: FeedExposureContext,
+  ): Promise<void> {
+    const row = await database.getFirstAsync<CountRow>(
+      `SELECT COUNT(*) AS count
+       FROM recent_feed_exposures
+       WHERE account_key = ? AND feed_type = ?`,
+      [context.accountKey, context.feedType],
+    );
+    if ((row?.count ?? 0) <= MAX_FEED_EXPOSURES_PER_CONTEXT) return;
+    await this.trimContext(database, context);
+  }
+
+  private async trimContext(
+    database: SQLiteDatabase,
+    context: FeedExposureContext,
+  ): Promise<void> {
+    await database.runAsync(
+      `DELETE FROM recent_feed_exposures
+       WHERE rowid IN (
+         SELECT rowid
+         FROM recent_feed_exposures
+         WHERE account_key = ? AND feed_type = ?
+         ORDER BY
+           last_exposed_at DESC,
+           content_type DESC,
+           content_id DESC
+         LIMIT -1 OFFSET ?
+       )`,
+      [context.accountKey, context.feedType, MAX_FEED_EXPOSURES_PER_CONTEXT],
     );
   }
 }
