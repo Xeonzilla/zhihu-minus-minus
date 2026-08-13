@@ -26,7 +26,7 @@ import RenderHtml, {
   defaultSystemFonts,
   useRendererProps,
 } from 'react-native-render-html';
-import { SvgUri } from 'react-native-svg';
+import Svg, { Line, SvgUri } from 'react-native-svg';
 import {
   createSegmentReaction,
   getAnswer,
@@ -206,6 +206,73 @@ export const LinkCard: React.FC<{
   );
 });
 
+interface TextSlice {
+  text: string;
+  interaction?: any;
+  isLiked?: boolean;
+}
+
+function sliceParagraphText(
+  fullText: string,
+  marks: SegmentInfo['marks'] | undefined,
+): TextSlice[] {
+  if (!fullText) return [];
+  if (!marks || marks.length === 0) {
+    return [{ text: fullText }];
+  }
+
+  const sortedMarks = [...marks].sort((a, b) => a.start_index - b.start_index);
+  const slices: TextSlice[] = [];
+  let currentIndex = 0;
+
+  for (const mark of sortedMarks) {
+    const { start_index, end_index } = mark;
+    const interaction =
+      mark.seg_info?.like_count ||
+        mark.seg_info?.comment_count ||
+        mark.seg_info?.is_like
+        ? mark.seg_info
+        : mark.master_seg_info?.like_count ||
+          mark.master_seg_info?.comment_count ||
+          mark.master_seg_info?.is_like
+          ? mark.master_seg_info
+          : null;
+
+    if (!interaction) continue;
+
+    if (start_index > currentIndex) {
+      slices.push({ text: fullText.slice(currentIndex, start_index) });
+    }
+
+    if (end_index > start_index) {
+      slices.push({
+        text: fullText.slice(start_index, end_index),
+        interaction: { ...interaction, mark },
+        isLiked: !!interaction.is_like,
+      });
+      currentIndex = end_index;
+    }
+  }
+
+  if (currentIndex < fullText.length) {
+    slices.push({ text: fullText.slice(currentIndex) });
+  }
+
+  return slices.length > 0 ? slices : [{ text: fullText }];
+}
+
+function getTNodeText(node: any): string {
+  if (!node) return '';
+  if (typeof node.data === 'string') return node.data;
+  if (node.children && Array.isArray(node.children)) {
+    return node.children.map(getTNodeText).join('');
+  }
+  if (node.init?.children && Array.isArray(node.init.children)) {
+    return node.init.children.map(getTNodeText).join('');
+  }
+  return '';
+}
+
 const P_Renderer: CustomBlockRenderer = ({ TDefaultRenderer, ...props }) => {
   const { tnode } = props;
   const rendererProps = useRendererProps('p');
@@ -214,52 +281,74 @@ const P_Renderer: CustomBlockRenderer = ({ TDefaultRenderer, ...props }) => {
 
   const {
     segmentMap,
-    activeSegmentId,
-    modalVisible,
     onPress,
     findActiveInteraction,
-    colorScheme,
+    fontSizeScale = 1.0,
+    lineHeightScale = 1.5,
   } = rendererProps as any;
 
   const pid = tnode.attributes['data-pid'];
   const segment = pid ? segmentMap.get(pid) : null;
-  const interaction = findActiveInteraction(segment);
-  const hasInteraction =
-    interaction &&
-    (interaction.like_count > 0 ||
-      interaction.comment_count > 0 ||
-      interaction.is_like);
-  const isLiked = interaction?.is_like;
-  const isActive = activeSegmentId === pid && modalVisible;
+  const fullText = segment?.text || getTNodeText(tnode) || '';
+  const slices = sliceParagraphText(fullText, segment?.marks);
+  const hasAnyInteraction = slices.some((s) => s.interaction);
 
-  const handlePress = () => {
-    if (hasInteraction && interaction) {
-      onPress(pid, segment, interaction);
-    }
-  };
-
-  const content = <TDefaultRenderer {...props} />;
-
-  if (!hasInteraction) {
-    return content;
+  if (!hasAnyInteraction) {
+    return <TDefaultRenderer {...props} />;
   }
 
-  const primaryTransparent = useThemeColor({}, 'primaryTransparent');
-  const primaryLight = useThemeColor({}, 'primary_0d');
+  const textColor = useThemeColor({}, 'text');
+  const lightPrimaryColor = useThemeColor({}, 'primary_60');
+
+  const textFontSize = 17 * fontSizeScale;
+  const textLineHeight = 17 * lineHeightScale;
 
   return (
-    <Pressable
-      onPress={handlePress}
-      className="bg-transparent overflow-visible rounded-xl py-1.5 px-2 -mx-2 my-1"
+    <Text
       style={[
-        isActive && {
-          backgroundColor: primaryTransparent,
+        props.style as any,
+        {
+          color: textColor,
+          fontSize: textFontSize,
+          lineHeight: textLineHeight,
+          marginBottom: 14,
+          marginTop: 0,
         },
-        !isActive && isLiked && { backgroundColor: primaryLight },
       ]}
     >
-      {content}
-    </Pressable>
+      {slices.map((slice, idx) => {
+        if (slice.interaction) {
+          return (
+            <Text
+              key={idx}
+              onPress={() => onPress(pid, segment, slice.interaction)}
+              style={{
+                color: textColor,
+                fontSize: textFontSize,
+                lineHeight: textLineHeight,
+                textDecorationLine: 'underline',
+                textDecorationStyle: 'dashed',
+                textDecorationColor: lightPrimaryColor,
+              }}
+            >
+              {slice.text}
+            </Text>
+          );
+        }
+        return (
+          <Text
+            key={idx}
+            style={{
+              color: textColor,
+              fontSize: textFontSize,
+              lineHeight: textLineHeight,
+            }}
+          >
+            {slice.text}
+          </Text>
+        );
+      })}
+    </Text>
   );
 };
 
@@ -705,6 +794,8 @@ export const ZhihuContent: React.FC<ZhihuContentProps> = React.memo(
           onPress: handlePress,
           findActiveInteraction,
           colorScheme,
+          fontSizeScale,
+          lineHeightScale,
         },
         a: {
           onPress: (_event: any, href: string) => handleInternalLink(href),
@@ -737,17 +828,22 @@ export const ZhihuContent: React.FC<ZhihuContentProps> = React.memo(
     );
 
     const primaryColor = useThemeColor({}, 'primary');
-    const primaryTransparent = useThemeColor({}, 'primaryTransparent');
+    const lightPrimaryColor = useThemeColor({}, 'primary_40');
 
     const classesStyles = useMemo(
       () => ({
         'segment-interactable': {
           textDecorationLine: 'underline',
-          textDecorationColor: primaryTransparent,
+          textDecorationStyle: 'dashed',
+          textDecorationColor: lightPrimaryColor,
         },
-        'segment-liked': {},
+        'segment-liked': {
+          textDecorationLine: 'underline',
+          textDecorationStyle: 'dashed',
+          textDecorationColor: lightPrimaryColor,
+        },
       }),
-      [primaryTransparent],
+      [lightPrimaryColor],
     );
 
     const tagsStyles = useMemo(
@@ -1062,13 +1158,30 @@ export const ZhihuContent: React.FC<ZhihuContentProps> = React.memo(
                         className="flex-row items-center bg-transparent"
                         onPress={() => {
                           setModalVisible(false);
-                          const { seg_ids } = activeSegment || {};
+                          const { seg_ids, text, startIndex, endIndex } =
+                            activeSegment || {};
                           const segId = Array.isArray(seg_ids)
                             ? seg_ids[0]
                             : seg_ids;
-                          router.push(
-                            `/comments/${objectId}?type=${type}${segId ? `&segmentId=${segId}` : ''}`,
-                          );
+                          let segText = text || '';
+                          if (
+                            typeof startIndex === 'number' &&
+                            typeof endIndex === 'number' &&
+                            endIndex > startIndex
+                          ) {
+                            const sliced = segText
+                              .slice(startIndex, endIndex)
+                              .trim();
+                            if (sliced) segText = sliced;
+                          }
+                          const queryParams = [
+                            `type=${type}`,
+                            segId ? `segmentId=${segId}` : null,
+                            segText ? `text=${encodeURIComponent(segText)}` : null,
+                          ]
+                            .filter(Boolean)
+                            .join('&');
+                          router.push(`/comments/${objectId}?${queryParams}`);
                         }}
                       >
                         <Ionicons
@@ -1089,7 +1202,26 @@ export const ZhihuContent: React.FC<ZhihuContentProps> = React.memo(
                       }}
                       onPress={() => {
                         setModalVisible(false);
-                        router.push(`/comments/${objectId}?type=${type}`);
+                        const { text, startIndex, endIndex } =
+                          activeSegment || {};
+                        let segText = text || '';
+                        if (
+                          typeof startIndex === 'number' &&
+                          typeof endIndex === 'number' &&
+                          endIndex > startIndex
+                        ) {
+                          const sliced = segText
+                            .slice(startIndex, endIndex)
+                            .trim();
+                          if (sliced) segText = sliced;
+                        }
+                        const queryParams = [
+                          `type=${type}`,
+                          segText ? `text=${encodeURIComponent(segText)}` : null,
+                        ]
+                          .filter(Boolean)
+                          .join('&');
+                        router.push(`/comments/${objectId}?${queryParams}`);
                       }}
                     >
                       <Text type="primary" className="text-sm font-bold mr-1">

@@ -129,15 +129,15 @@ export default React.memo(function ZhihuDOMContent({
         .zhihu-content hr { height: 1px; background-color: rgba(150,150,150,0.2); border: none; margin: 25px 0; }
         
         .segment-interactable {
-          text-decoration: underline;
-          text-decoration-color: ${primaryColor}80;
+          text-decoration: underline dashed;
+          text-decoration-style: dashed;
+          text-decoration-color: ${primaryColor}40;
           cursor: pointer;
-          border-radius: 8px;
-          padding: 4px;
-          margin: -4px;
         }
         .segment-liked {
-          background-color: ${isDark ? 'rgba(0, 132, 255, 0.15)' : 'rgba(0, 132, 255, 0.05)'};
+          text-decoration: underline dashed;
+          text-decoration-style: dashed;
+          text-decoration-color: ${primaryColor}60;
         }
       </style>
     </head>
