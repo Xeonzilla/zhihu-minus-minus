@@ -45,8 +45,8 @@ import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import {
-  feedExposureRepository,
   type FeedExposureContext,
+  feedExposureRepository,
 } from '@/storage/feedExposureRepository';
 import { useAuthStore } from '@/store/useAuthStore';
 import { type TabKey, useSettingsStore } from '@/store/useSettingsStore';
@@ -652,9 +652,8 @@ const FeedList = React.forwardRef<
     if (!localAccountKey) return null;
     return { accountKey: localAccountKey, feedType: tab };
   }, [localAccountKey, tab]);
-  const [recentExposureKeys, setRecentExposureKeys] = useState<
-    Set<string> | null
-  >(() => (localDedupEnabled ? null : new Set()));
+  const [recentExposureKeys, setRecentExposureKeys] =
+    useState<Set<string> | null>(() => (localDedupEnabled ? null : new Set()));
 
   useEffect(() => {
     let cancelled = false;
