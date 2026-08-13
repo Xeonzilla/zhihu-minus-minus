@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { FlashList } from '@shopify/flash-list';
+import { useIsFocused } from '@react-navigation/native';
+import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { BlurView } from 'expo-blur';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -44,8 +45,20 @@ import { RecentMoments } from '@/components/RecentMoments';
 import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import {
+  type FeedExposureContext,
+  feedExposureRepository,
+} from '@/storage/feedExposureRepository';
 import { useAuthStore } from '@/store/useAuthStore';
 import { type TabKey, useSettingsStore } from '@/store/useSettingsStore';
+import { supportsLocalFeedDedup } from '@/utils/feedDedup';
+import {
+  type FeedContentIdentity,
+  getFeedContentIdentity,
+  getFeedContentKey,
+  getInMemoryFeedKey,
+} from '@/utils/feedIdentity';
+import { resolveLocalAccountKey } from '@/utils/localAccount';
 import { refreshInfiniteQuery } from '@/utils/query';
 import ProfileScreen from './profile';
 import PublishScreen from './publish';
@@ -64,12 +77,14 @@ const TABS = [
   'profile',
 ] as const;
 type TabType = (typeof TABS)[number];
+type FeedListItem = FeedItem | HotItem;
 
 export default function HomeScreen() {
   const { width: windowWidth } = useWindowDimensions();
   const containerWidth = Math.min(windowWidth - 40, 500);
 
   const insets = useSafeAreaInsets();
+  const isFocused = useIsFocused();
   const colorScheme = useColorScheme();
   const router = useRouter();
   const params = useLocalSearchParams<{ tab?: string }>();
@@ -138,7 +153,9 @@ export default function HomeScreen() {
   }, [params.tab, currentTabs, currentPage]);
 
   const [scrolledTabs, setScrolledTabs] = useState<Record<number, boolean>>({});
-  const [refreshingTabs, setRefreshingTabs] = useState<Record<number, boolean>>({});
+  const [refreshingTabs, setRefreshingTabs] = useState<Record<number, boolean>>(
+    {},
+  );
   const listRefs = useRef<any[]>([]);
 
   const handleRefreshStateChange = useCallback(
@@ -426,6 +443,7 @@ export default function HomeScreen() {
                 <FeedList
                   ref={(el) => (listRefs.current[idx] = el)}
                   tab={tab as any}
+                  isActive={isFocused && currentPage === idx}
                   insets={insets}
                   guestCookieReady={guestCookieReady}
                   onScroll={(offset) => handleScrollUpdate(idx, offset)}
@@ -635,139 +653,282 @@ const FeedList = React.forwardRef<
   any,
   {
     tab: TabType;
+    isActive: boolean;
     insets: any;
     guestCookieReady: boolean;
     onScroll?: (offset: number) => void;
     onRefreshStateChange?: (isRefreshing: boolean) => void;
   }
->(({ tab, insets, guestCookieReady, onScroll, onRefreshStateChange }, ref) => {
-  const queryClient = useQueryClient();
-  const { cookies } = useAuthStore();
-  const colorScheme = useColorScheme();
-  const tintColor = useThemeColor({}, 'primary');
-  const [isRefreshing, setIsRefreshing] = useState(false);
+>(
+  (
+    { tab, isActive, insets, guestCookieReady, onScroll, onRefreshStateChange },
+    ref,
+  ) => {
+    const queryClient = useQueryClient();
+    const { cookies, me } = useAuthStore();
+    const { enableLocalFeedDedup } = useSettingsStore();
+    const colorScheme = useColorScheme();
+    const tintColor = useThemeColor({}, 'primary');
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    isRefetching,
-    refetch,
-  } = useInfiniteQuery({
-    queryKey: ['zhihu-feed', tab],
-    queryFn: async ({ pageParam = (FEED_URLS as any)[tab] }) => {
-      if (!cookies && tab === 'following') return { items: [], nextUrl: null };
-      try {
-        const data = await getFeed(pageParam as string);
-        const rawItems = data.data || [];
-        let items: Array<FeedItem | HotItem>;
-        if (tab === 'following')
-          items = rawItems
-            .map((item: RawFeedItem) => parseFollowingData(item))
-            .filter(Boolean) as FeedItem[];
-        else if (tab === 'recommend' || tab === 'local')
-          items = rawItems.map((item: RawFeedItem) => parseRecommendData(item));
-        else
-          items = rawItems.map((item: RawFeedItem, index: number) =>
-            parseHotData(item, index),
-          );
-        return {
-          items,
-          nextUrl: data.paging?.next?.replace('http://', 'https://'),
+    const localAccountKey = useMemo(
+      () => resolveLocalAccountKey(me, Boolean(cookies)),
+      [cookies, me],
+    );
+    const queryAccountKey = localAccountKey ?? 'authenticated-pending';
+    const localDedupEnabled =
+      enableLocalFeedDedup &&
+      supportsLocalFeedDedup(tab) &&
+      localAccountKey !== null;
+    const exposureContext = useMemo<FeedExposureContext | null>(() => {
+      if (!localAccountKey) return null;
+      return { accountKey: localAccountKey, feedType: tab };
+    }, [localAccountKey, tab]);
+    const [recentExposureKeys, setRecentExposureKeys] =
+      useState<Set<string> | null>(() =>
+        localDedupEnabled ? null : new Set(),
+      );
+
+    useEffect(() => {
+      let cancelled = false;
+      if (!localDedupEnabled || !exposureContext) {
+        setRecentExposureKeys(new Set());
+        return () => {
+          cancelled = true;
         };
-      } catch (_e: any) {
-        return { items: [], nextUrl: null };
       }
-    },
-    initialPageParam: (FEED_URLS as any)[tab],
-    getNextPageParam: (lastPage) => lastPage.nextUrl,
-    enabled: !!cookies || guestCookieReady,
-  });
 
-  const handleRefresh = useCallback(async () => {
-    setIsRefreshing(true);
-    onRefreshStateChange?.(true);
-    try {
-      await refreshInfiniteQuery(queryClient, ['zhihu-feed', tab], refetch);
-    } catch (_e) {
-    } finally {
-      setIsRefreshing(false);
-      onRefreshStateChange?.(false);
-    }
-  }, [queryClient, tab, refetch, onRefreshStateChange]);
+      setRecentExposureKeys(null);
+      void feedExposureRepository
+        .getRecentContentKeys(exposureContext)
+        .then((keys) => {
+          if (!cancelled) setRecentExposureKeys(keys);
+        })
+        .catch((error) => {
+          console.warn('读取本地 Feed 曝光记录失败', error);
+          if (!cancelled) setRecentExposureKeys(new Set());
+        });
 
-  const flattenedData = useMemo(() => {
-    const all = data?.pages.flatMap((page) => page.items) ?? [];
-    const seen = new Set();
-    return all.filter((item: any) => {
-      const id = item?.id?.toString();
-      if (!id || seen.has(id)) return false;
-      seen.add(id);
-      return true;
+      return () => {
+        cancelled = true;
+      };
+    }, [exposureContext, localDedupEnabled]);
+
+    const exposureTrackingRef = useRef({
+      enabled:
+        isActive &&
+        localDedupEnabled &&
+        exposureContext !== null &&
+        recentExposureKeys !== null,
+      context: exposureContext,
     });
-  }, [data]);
+    exposureTrackingRef.current = {
+      enabled:
+        isActive &&
+        localDedupEnabled &&
+        exposureContext !== null &&
+        recentExposureKeys !== null,
+      context: exposureContext,
+    };
+    const viewabilityConfig = useRef({
+      itemVisiblePercentThreshold: 50,
+      minimumViewTime: 800,
+    }).current;
+    const onViewableItemsChanged = useRef(
+      ({ viewableItems }: { viewableItems: Array<{ item: FeedListItem }> }) => {
+        const { enabled, context } = exposureTrackingRef.current;
+        if (!enabled || !context) return;
 
-  const flashListRef = useRef<any>(null);
+        const identities = viewableItems
+          .map((viewable) => getFeedContentIdentity(viewable.item))
+          .filter(
+            (identity): identity is FeedContentIdentity => identity !== null,
+          );
+        if (identities.length > 0) {
+          void feedExposureRepository
+            .recordExposures(context, identities)
+            .catch((error) => {
+              console.warn('记录本地 Feed 曝光失败', error);
+            });
+        }
+      },
+    ).current;
+    const {
+      data,
+      fetchNextPage,
+      hasNextPage,
+      isFetchingNextPage,
+      isLoading,
+      isRefetching,
+      refetch,
+    } = useInfiniteQuery({
+      queryKey: ['zhihu-feed', queryAccountKey, tab],
+      queryFn: async ({ pageParam = (FEED_URLS as any)[tab] }) => {
+        if (!cookies && tab === 'following')
+          return { items: [], nextUrl: null };
+        try {
+          const data = await getFeed(pageParam as string);
+          const rawItems = data.data || [];
+          let items: Array<FeedItem | HotItem>;
+          if (tab === 'following')
+            items = rawItems
+              .map((item: RawFeedItem) => parseFollowingData(item))
+              .filter(Boolean) as FeedItem[];
+          else if (tab === 'recommend' || tab === 'local')
+            items = rawItems.map((item: RawFeedItem) =>
+              parseRecommendData(item),
+            );
+          else
+            items = rawItems.map((item: RawFeedItem, index: number) =>
+              parseHotData(item, index),
+            );
+          return {
+            items,
+            nextUrl: data.paging?.next?.replace('http://', 'https://'),
+          };
+        } catch (_e: any) {
+          return { items: [], nextUrl: null };
+        }
+      },
+      initialPageParam: (FEED_URLS as any)[tab],
+      getNextPageParam: (lastPage) => lastPage.nextUrl,
+      enabled:
+        (!!cookies || guestCookieReady) &&
+        (!localDedupEnabled || recentExposureKeys !== null),
+    });
 
-  React.useImperativeHandle(ref, () => ({
-    scrollToOffset: (args: any) => flashListRef.current?.scrollToOffset(args),
-    refresh: handleRefresh,
-  }));
+    const handleRefresh = useCallback(async () => {
+      setIsRefreshing(true);
+      onRefreshStateChange?.(true);
+      try {
+        if (localDedupEnabled && exposureContext) {
+          try {
+            const keys =
+              await feedExposureRepository.getRecentContentKeys(
+                exposureContext,
+              );
+            setRecentExposureKeys(keys);
+          } catch (error) {
+            console.warn('刷新本地 Feed 曝光记录失败', error);
+          }
+        }
+        await refreshInfiniteQuery(
+          queryClient,
+          ['zhihu-feed', queryAccountKey, tab],
+          refetch,
+        );
+      } catch (_e) {
+      } finally {
+        setIsRefreshing(false);
+        onRefreshStateChange?.(false);
+      }
+    }, [
+      exposureContext,
+      localDedupEnabled,
+      onRefreshStateChange,
+      queryClient,
+      queryAccountKey,
+      refetch,
+      tab,
+    ]);
 
-  return (
-    <FlashList
-      ref={flashListRef}
-      showsVerticalScrollIndicator={false}
-      data={flattenedData}
-      keyExtractor={(item, index) =>
-        `feed-${item.id?.toString() || index}-${index}`
-      }
-      onEndReached={() => hasNextPage && !isFetchingNextPage && fetchNextPage()}
-      onEndReachedThreshold={0.5}
-      onRefresh={handleRefresh}
-      refreshing={isRefreshing || isRefetching}
-      refreshControl={
-        <RefreshControl
-          refreshing={isRefreshing || isRefetching}
-          onRefresh={handleRefresh}
-          tintColor={tintColor}
-          colors={[tintColor]}
-          progressViewOffset={insets.top + 10}
-        />
-      }
-      onScroll={(e) => onScroll?.(e.nativeEvent.contentOffset.y)}
-      scrollEventThrottle={100}
-      contentContainerStyle={{
-        paddingTop: insets.top + 70,
-        paddingBottom: 120,
-      }}
-      renderItem={({ item }: { item: any }) =>
-        tab === 'hot' ? (
-          <HotCard item={item} />
-        ) : (
-          <FeedCard item={item} tab={tab} />
-        )
-      }
-      ListHeaderComponent={tab === 'following' ? <RecentMoments /> : null}
-      ListFooterComponent={
-        isFetchingNextPage ? <ActivityIndicator style={{ margin: 20 }} /> : null
-      }
-      ListEmptyComponent={
-        isLoading ? (
-          <View className="flex-1 items-center justify-center mt-[100px] bg-transparent">
-            <ActivityIndicator size="large" color={tintColor} />
-          </View>
-        ) : (
-          <View className="flex-1 items-center justify-center mt-[100px] bg-transparent">
-            <Text type="secondary">暂无内容 喵~</Text>
-          </View>
-        )
-      }
-    />
-  );
-});
+    const flattenedData = useMemo(() => {
+      const all = data?.pages.flatMap((page) => page.items) ?? [];
+      const seen = new Set<string>();
+      return all.filter((item) => {
+        const inMemoryKey = getInMemoryFeedKey(item);
+        if (!inMemoryKey || seen.has(inMemoryKey)) return false;
+        seen.add(inMemoryKey);
+
+        const persistentKey = getFeedContentKey(item);
+        if (
+          localDedupEnabled &&
+          persistentKey &&
+          recentExposureKeys?.has(persistentKey)
+        ) {
+          return false;
+        }
+        return true;
+      });
+    }, [data, localDedupEnabled, recentExposureKeys]);
+
+    const flashListRef = useRef<FlashListRef<FeedListItem>>(null);
+
+    useEffect(() => {
+      if (!isActive || !localDedupEnabled || recentExposureKeys === null)
+        return;
+
+      const frame = requestAnimationFrame(() => {
+        flashListRef.current?.recomputeViewableItems();
+      });
+      return () => cancelAnimationFrame(frame);
+    }, [isActive, localDedupEnabled, recentExposureKeys]);
+
+    React.useImperativeHandle(ref, () => ({
+      scrollToOffset: (args: any) => flashListRef.current?.scrollToOffset(args),
+      refresh: handleRefresh,
+    }));
+
+    return (
+      <FlashList
+        ref={flashListRef}
+        showsVerticalScrollIndicator={false}
+        data={flattenedData}
+        keyExtractor={(item, index) => {
+          const key = getInMemoryFeedKey(item);
+          return `feed-${key || index}`;
+        }}
+        onEndReached={() =>
+          hasNextPage && !isFetchingNextPage && fetchNextPage()
+        }
+        onEndReachedThreshold={0.5}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
+        onRefresh={handleRefresh}
+        refreshing={isRefreshing || isRefetching}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing || isRefetching}
+            onRefresh={handleRefresh}
+            tintColor={tintColor}
+            colors={[tintColor]}
+            progressViewOffset={insets.top + 10}
+          />
+        }
+        onScroll={(e) => onScroll?.(e.nativeEvent.contentOffset.y)}
+        scrollEventThrottle={100}
+        contentContainerStyle={{
+          paddingTop: insets.top + 70,
+          paddingBottom: 120,
+        }}
+        renderItem={({ item }: { item: any }) =>
+          tab === 'hot' ? (
+            <HotCard item={item} />
+          ) : (
+            <FeedCard item={item} tab={tab} />
+          )
+        }
+        ListHeaderComponent={tab === 'following' ? <RecentMoments /> : null}
+        ListFooterComponent={
+          isFetchingNextPage ? (
+            <ActivityIndicator style={{ margin: 20 }} />
+          ) : null
+        }
+        ListEmptyComponent={
+          isLoading ? (
+            <View className="flex-1 items-center justify-center mt-[100px] bg-transparent">
+              <ActivityIndicator size="large" color={tintColor} />
+            </View>
+          ) : (
+            <View className="flex-1 items-center justify-center mt-[100px] bg-transparent">
+              <Text type="secondary">暂无内容 喵~</Text>
+            </View>
+          )
+        }
+      />
+    );
+  },
+);
 
 // 数据解析函数保持不变 (省略以节省空间，实际代码中应保留)
 function parseFollowingData(item: RawFeedItem): FeedItem | null {
@@ -815,6 +976,7 @@ function parseFollowingData(item: RawFeedItem): FeedItem | null {
 function parseRecommendData(item: RawFeedItem): FeedItem {
   const target = (item.target || item) as any;
   const type = target.type;
+  const stableId = target.id?.toString().trim();
   let appType: 'answers' | 'articles' | 'pins' | 'questions' = 'answers';
   if (type === 'answer') appType = 'answers';
   else if (type === 'article') appType = 'articles';
@@ -822,7 +984,8 @@ function parseRecommendData(item: RawFeedItem): FeedItem {
   else if (type === 'question') appType = 'questions';
 
   return {
-    id: target.id?.toString() || Math.random().toString(),
+    id: stableId || Math.random().toString(),
+    isIdStable: Boolean(stableId),
     title: target.question?.title || target.title || '',
     questionId:
       target.question?.id?.toString() ||

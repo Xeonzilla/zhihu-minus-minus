@@ -1,6 +1,8 @@
 import * as FileSystem from 'expo-file-system/legacy';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { clearLocalAccountData } from '@/storage/localAccountData';
+import { resolveLocalAccountKey } from '@/utils/localAccount';
 
 // 适配器：使用 Expo FileSystem 代替 SecureStore 存储大数据
 // Android SecureStore 有 2048 字节的硬限制，存储多个账号信息时极易导致崩溃
@@ -40,6 +42,16 @@ export interface Account {
   me: any;
   last_updated?: number; // 添加更新时间戳
 }
+
+// 账号被移除时同步清理其本地数据（如浏览曝光记录）
+// 清理失败时数据仍会随保留期自动过期，因此只告警不阻塞
+const removeAccountLocalData = (account: Account | undefined) => {
+  const accountKey = resolveLocalAccountKey(account?.me, true);
+  if (!accountKey) return;
+  void clearLocalAccountData(accountKey).catch((error) => {
+    console.warn('清除已移除账号的本地数据失败', error);
+  });
+};
 
 interface AuthState {
   accounts: Account[];
@@ -133,6 +145,7 @@ export const useAuthStore = create<AuthState>()(
       removeAccount: (index) => {
         const { accounts, activeAccountIndex } = get();
         if (index >= 0 && index < accounts.length) {
+          removeAccountLocalData(accounts[index]);
           const newAccounts = accounts.filter((_, i) => i !== index);
           let newIndex = activeAccountIndex;
           if (activeAccountIndex === index) {
@@ -154,6 +167,7 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         const { accounts, activeAccountIndex } = get();
         if (activeAccountIndex >= 0) {
+          removeAccountLocalData(accounts[activeAccountIndex]);
           const newAccounts = accounts.filter(
             (_, i) => i !== activeAccountIndex,
           );

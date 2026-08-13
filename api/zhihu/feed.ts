@@ -17,6 +17,7 @@ export interface FeedTopic {
 
 export interface FeedItem {
   id: string;
+  isIdStable?: boolean;
   title: any;
   questionId?: string;
   actionText?: string;

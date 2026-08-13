@@ -28,7 +28,6 @@ export interface ZhihuFollowingColumnItem {
   author: ZhihuAuthor;
 }
 
-
 export interface ZhihuFollowingColumnsResponse {
   paging: ZhihuPaging;
   data: ZhihuFollowingColumnItem[];
