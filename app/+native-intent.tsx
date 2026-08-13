@@ -5,8 +5,8 @@ export function redirectSystemPath({
 }: {
   path: string;
   initial: boolean;
-}): string {
+}): string | null {
   if (isExpoInternalUrl(path)) return path;
 
-  return parseZhihuUrl(path) ?? path;
+  return parseZhihuUrl(path);
 }

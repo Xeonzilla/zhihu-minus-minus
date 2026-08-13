@@ -1,8 +1,113 @@
 export function isExpoInternalUrl(url: string): boolean {
   return (
-    url.includes('expo-development-client') ||
-    url.includes('expo-auth-session')
+    url.includes('expo-development-client') || url.includes('expo-auth-session')
   );
+}
+
+const ZHIHU_WEB_HOSTS = new Set([
+  'zhihu.com',
+  'www.zhihu.com',
+  'zhuanlan.zhihu.com',
+  'oia.zhihu.com',
+]);
+
+const ZHIHU_APP_PROTOCOLS = new Set(['zhihu:', 'zhihu--:']);
+
+function extractPath(url: string): string | null {
+  const trimmedUrl = url.trim();
+  if (!trimmedUrl) return null;
+
+  if (!trimmedUrl.includes('://')) {
+    return trimmedUrl.startsWith('/') ? trimmedUrl : `/${trimmedUrl}`;
+  }
+
+  const parsedUrl = new URL(trimmedUrl);
+  if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
+    if (!ZHIHU_WEB_HOSTS.has(parsedUrl.hostname.toLowerCase())) return null;
+    return parsedUrl.pathname;
+  }
+
+  if (ZHIHU_APP_PROTOCOLS.has(parsedUrl.protocol.toLowerCase())) {
+    const host = parsedUrl.hostname ? `/${parsedUrl.hostname}` : '';
+    return `${host}${parsedUrl.pathname}` || '/';
+  }
+
+  return null;
+}
+
+function normalizeSupportedPath(path: string): string | null {
+  const cleanPath = path.split(/[?#]/, 1)[0].replace(/\/+$/, '') || '/';
+  const withoutOia = cleanPath.replace(/^\/oia(?=\/|$)/, '') || '/';
+
+  if (
+    withoutOia === '/' ||
+    withoutOia === '/feed' ||
+    withoutOia === '/home' ||
+    withoutOia === '/follow'
+  ) {
+    return '/';
+  }
+
+  const questionAnswerMatch = withoutOia.match(
+    /^\/questions?\/(\d+)\/answers?\/(\d+)$/,
+  );
+  if (questionAnswerMatch) return `/answer/${questionAnswerMatch[2]}`;
+
+  const routePatterns: Array<{
+    pattern: RegExp;
+    buildPath: (match: RegExpMatchArray) => string;
+  }> = [
+    {
+      pattern: /^\/questions?\/(\d+)$/,
+      buildPath: (match) => `/question/${match[1]}`,
+    },
+    {
+      pattern: /^\/answers?\/(\d+)$/,
+      buildPath: (match) => `/answer/${match[1]}`,
+    },
+    {
+      pattern: /^\/(?:articles?|p)\/(\d+)$/,
+      buildPath: (match) => `/article/${match[1]}`,
+    },
+    {
+      pattern: /^\/pins?\/(\d+)$/,
+      buildPath: (match) => `/pin/${match[1]}`,
+    },
+    {
+      pattern:
+        /^\/(?:people|users?)\/([^/]+)(?:\/(followers|following|mutual|stream))?$/,
+      buildPath: (match) =>
+        `/user/${match[1]}${match[2] ? `/${match[2]}` : ''}`,
+    },
+    {
+      pattern: /^\/topics?\/([^/]+)$/,
+      buildPath: (match) => `/topic/${match[1]}`,
+    },
+    {
+      pattern: /^\/columns?\/([^/]+)$/,
+      buildPath: (match) => `/column/${match[1]}`,
+    },
+    {
+      pattern: /^\/collections?\/(\d+)$/,
+      buildPath: (match) => `/collections/${match[1]}`,
+    },
+  ];
+
+  for (const { pattern, buildPath } of routePatterns) {
+    const match = withoutOia.match(pattern);
+    if (match) return buildPath(match);
+  }
+
+  // Zhihu app links sometimes contain only a resource ID.
+  if (/^\/\d{15,25}$/.test(withoutOia)) {
+    const id = withoutOia.substring(1);
+    return id.startsWith('19') ? `/question/${id}` : `/answer/${id}`;
+  }
+  if (/^\/\d{8,14}$/.test(withoutOia)) {
+    return `/question/${withoutOia.substring(1)}`;
+  }
+
+  return null;
 }
 
 /**
@@ -13,63 +118,9 @@ export function isExpoInternalUrl(url: string): boolean {
 export function parseZhihuUrl(url: string | null): string | null {
   if (!url) return null;
 
-  // 1. 提取路径部分
-  let path = '';
   try {
-    if (url.includes('://')) {
-      const parts = url.split('://');
-      const rest = parts[1] !== undefined ? parts[1] : '';
-
-      if (url.startsWith('http')) {
-        // 处理 http(s) 链接: https://www.zhihu.com/question/123 -> /question/123
-        const match = rest.match(/^[^/]+(\/.*)$/);
-        path = match ? match[1] : '/';
-      } else {
-        // 处理自定义 scheme: zhihu://question/123 -> /question/123
-        path = rest.startsWith('/') ? rest : '/' + rest;
-      }
-    } else {
-      // 已经是路径形式
-      path = url.startsWith('/') ? url : '/' + url;
-    }
-
-    // 2. 规范化路径：移除 oia (移动端优化页前缀), 统一单复数
-    path = path.replace(/^\/oia\//, '/');
-    path = path.replace(/^\/questions?\//, '/question/');
-    path = path.replace(/^\/answers?\//, '/answer/');
-    path = path.replace(/^\/people\//, '/user/');
-    path = path.replace(/^\/articles?\//, '/article/');
-    path = path.replace(/^\/p\//, '/article/');
-    path = path.replace(/^\/pins?\//, '/pin/');
-
-    // 3. 清理查询参数
-    const cleanPath = path.split('?')[0];
-
-    // 4. 处理首页/空路径
-    if (
-      !cleanPath ||
-      cleanPath === '/' ||
-      cleanPath === '/oia' ||
-      cleanPath === '/feed' ||
-      cleanPath === '/home' ||
-      cleanPath === '/follow'
-    ) {
-      return '/';
-    }
-
-    // 5. 特殊处理：裸 ID 启发式判断 (知乎深度链接有时只带 ID)
-    // 裸的长 ID (15-25位): 通常是回答 ID 或问题 ID
-    if (/^\/\d{15,25}$/.test(cleanPath)) {
-      const id = cleanPath.substring(1);
-      // 知乎问题 ID 通常以 19 开头（目前规律），否则可能是回答 ID
-      return id.startsWith('19') ? `/question/${id}` : `/answer/${id}`;
-    }
-    // 裸的短 ID (8-14位): 通常是问题 ID
-    else if (/^\/\d{8,14}$/.test(cleanPath)) {
-      return `/question/${cleanPath.substring(1)}`;
-    }
-
-    return cleanPath;
+    const path = extractPath(url);
+    return path ? normalizeSupportedPath(path) : null;
   } catch (err) {
     console.error('[URL Parser] Failed to parse:', url, err);
     return null;
@@ -80,11 +131,7 @@ export function parseZhihuUrl(url: string | null): string | null {
  * 判断是否为知乎内部链接
  */
 export function isInternalZhihuLink(url: string): boolean {
-  return (
-    url.includes('zhihu.com') ||
-    url.startsWith('zhihu://') ||
-    url.startsWith('/')
-  );
+  return parseZhihuUrl(url) !== null;
 }
 
 /**
@@ -93,10 +140,13 @@ export function isInternalZhihuLink(url: string): boolean {
  */
 export function extractZhihuRedirectTarget(url: string): string {
   try {
-    if (url.includes('link.zhihu.com')) {
-      const parsed = new URL(url);
+    const parsed = new URL(url);
+    if (
+      (parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
+      parsed.hostname.toLowerCase() === 'link.zhihu.com'
+    ) {
       const target = parsed.searchParams.get('target');
-      if (target) return decodeURIComponent(target);
+      if (target) return target;
     }
   } catch (_) {}
   return url;
