@@ -30,21 +30,29 @@ export function FeedCardPreview({ item }: FeedCardPreviewProps) {
   const { data: fullData, isLoading } = useQuery({
     queryKey: ['feed-card-preview', typeKey, item.id],
     queryFn: async () => {
-      if (item.type === 'answers') {
-        return getAnswer(item.id);
+      try {
+        if (item.type === 'answers') {
+          return await getAnswer(item.id);
+        }
+        if (item.type === 'articles') {
+          return await getArticle(item.id);
+        }
+        if (item.type === 'pins') {
+          return await getPin(item.id);
+        }
+        if (item.type === 'questions') {
+          return await getQuestion(item.id);
+        }
+        return null;
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          return null;
+        }
+        throw err;
       }
-      if (item.type === 'articles') {
-        return getArticle(item.id);
-      }
-      if (item.type === 'pins') {
-        return getPin(item.id);
-      }
-      if (item.type === 'questions') {
-        return getQuestion(item.id);
-      }
-      return null;
     },
     staleTime: 5 * 60 * 1000,
+    retry: false,
   });
 
   return (

@@ -142,6 +142,20 @@ export default function HomeScreen() {
   const [currentPage, setCurrentPage] = useState(initialPageIndex);
   const [guestCookieReady, setGuestCookieReady] = useState(false);
 
+  // 懒加载 Tab 标签页记录：仅在访问过的 Tab 渲染对应组件，避免冷启动时并发请求所有 Tab 的接口
+  const [visitedPages, setVisitedPages] = useState<Set<number>>(
+    () => new Set([initialPageIndex]),
+  );
+
+  useEffect(() => {
+    setVisitedPages((prev) => {
+      if (prev.has(currentPage)) return prev;
+      const next = new Set(prev);
+      next.add(currentPage);
+      return next;
+    });
+  }, [currentPage]);
+
   // 监听 params.tab 变化并切换页面
   useEffect(() => {
     if (params.tab) {
@@ -413,9 +427,10 @@ export default function HomeScreen() {
         }}
       >
         {currentTabs.map((tab, idx) => {
+          const isVisited = visitedPages.has(idx);
           return (
             <View key={tab} style={{ flex: 1, backgroundColor: 'transparent' }}>
-              {tab === 'daily' ? (
+              {!isVisited ? null : tab === 'daily' ? (
                 <DailyList
                   ref={(el) => (listRefs.current[idx] = el)}
                   insets={insets}
@@ -813,9 +828,9 @@ const FeedList = React.forwardRef<
               .map((item: RawFeedItem) => parseFollowingData(item))
               .filter(Boolean) as FeedItem[];
           else if (tab === 'recommend' || tab === 'local')
-            items = rawItems.map((item: RawFeedItem) =>
-              parseRecommendData(item),
-            );
+            items = rawItems
+              .map((item: RawFeedItem) => parseRecommendData(item))
+              .filter(Boolean) as FeedItem[];
           else
             items = rawItems.map((item: RawFeedItem, index: number) =>
               parseHotData(item, index),
@@ -992,11 +1007,13 @@ function parseFollowingData(item: RawFeedItem): FeedItem | null {
   const target = item.target;
   if (!target) return null;
   const type = target.type;
-  let appType: 'answers' | 'articles' | 'pins' | 'questions' = 'answers';
+  let appType: 'answers' | 'articles' | 'pins' | 'questions' | null = null;
   if (type === 'answer') appType = 'answers';
   else if (type === 'article') appType = 'articles';
   else if (type === 'pin') appType = 'pins';
   else if (type === 'question') appType = 'questions';
+
+  if (!appType) return null;
 
   return {
     id: target.id?.toString() || Math.random().toString(),
@@ -1030,15 +1047,17 @@ function parseFollowingData(item: RawFeedItem): FeedItem | null {
   };
 }
 
-function parseRecommendData(item: RawFeedItem): FeedItem {
+function parseRecommendData(item: RawFeedItem): FeedItem | null {
   const target = (item.target || item) as any;
   const type = target.type;
   const stableId = target.id?.toString().trim();
-  let appType: 'answers' | 'articles' | 'pins' | 'questions' = 'answers';
+  let appType: 'answers' | 'articles' | 'pins' | 'questions' | null = null;
   if (type === 'answer') appType = 'answers';
   else if (type === 'article') appType = 'articles';
   else if (type === 'pin') appType = 'pins';
   else if (type === 'question') appType = 'questions';
+
+  if (!appType) return null;
 
   return {
     id: stableId || Math.random().toString(),

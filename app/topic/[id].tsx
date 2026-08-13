@@ -428,11 +428,13 @@ function parseTopicFeedItem(item: any) {
   const target = item.target || item;
   if (!target) return null;
   const type = target.type;
-  let appType: 'answers' | 'articles' | 'pins' | 'questions' = 'answers';
+  let appType: 'answers' | 'articles' | 'pins' | 'questions' | null = null;
   if (type === 'answer') appType = 'answers';
   else if (type === 'article') appType = 'articles';
   else if (type === 'pin') appType = 'pins';
   else if (type === 'question') appType = 'questions';
+
+  if (!appType) return null;
 
   // Extract content for pins (thoughts)
   let excerpt = target.excerpt || '';

@@ -63,6 +63,8 @@ export default function AnswerDetailScreen() {
     queryFn: () => getAnswer(initialId),
     enabled: !!initialId,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: (failureCount, err: any) =>
+      err?.response?.status === 404 ? false : failureCount < 2,
   });
 
   const questionId = propQuestionId || initialAnswer?.question?.id;

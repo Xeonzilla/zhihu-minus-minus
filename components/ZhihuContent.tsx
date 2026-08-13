@@ -106,14 +106,22 @@ export const LinkCard: React.FC<{
     queryKey: ['linkcard', parsedId?.type, parsedId?.id],
     queryFn: async () => {
       if (!parsedId) return null;
-      if (parsedId.type === 'answer') return getAnswer(parsedId.id);
-      if (parsedId.type === 'question') return getQuestion(parsedId.id);
-      if (parsedId.type === 'article') return getArticle(parsedId.id);
-      if (parsedId.type === 'pin') return getPin(parsedId.id);
-      return null;
+      try {
+        if (parsedId.type === 'answer') return await getAnswer(parsedId.id);
+        if (parsedId.type === 'question') return await getQuestion(parsedId.id);
+        if (parsedId.type === 'article') return await getArticle(parsedId.id);
+        if (parsedId.type === 'pin') return await getPin(parsedId.id);
+        return null;
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          return null;
+        }
+        throw err;
+      }
     },
     enabled: !!parsedId && !title,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
+    retry: false,
   });
 
   const fetchedTitle =

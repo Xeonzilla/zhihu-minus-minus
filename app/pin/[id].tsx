@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { addReadHistory } from '@/api/zhihu/history';
 import { followMember, unfollowMember } from '@/api/zhihu/member';
 import { getPin } from '@/api/zhihu/pin';
+import { BouncyButton } from '@/components/BouncyButton';
 import { LikeButton } from '@/components/LikeButton';
 import { ShareMenu } from '@/components/ShareMenu';
 import { Text, ThemedIcon, useThemeColor, View } from '@/components/Themed';
@@ -48,6 +49,8 @@ export default function PinDetailScreen() {
   } = useQuery({
     queryKey: ['pin-detail', id],
     queryFn: () => getPin(id as string),
+    retry: (failureCount, err: any) =>
+      err?.response?.status === 404 ? false : failureCount < 2,
   });
 
   const enableBrowseHistory = useSettingsStore((s) => s.enableBrowseHistory);
@@ -81,6 +84,32 @@ export default function PinDetailScreen() {
         <Text type="secondary" className="mt-2.5">
           载入想法中...喵
         </Text>
+      </View>
+    );
+
+  if (!pin)
+    return (
+      <View type="default" className="flex-1 justify-center items-center px-6">
+        <Ionicons
+          name="compass-outline"
+          size={48}
+          color={Colors[colorScheme].textSecondary}
+        />
+        <Text className="text-base font-bold mt-4 mb-2">
+          你似乎来到了没有知识存在的荒原
+        </Text>
+        <Text type="secondary" className="text-xs text-center mb-6">
+          该想法可能已被删除、失效或暂不可见 喵~
+        </Text>
+        <BouncyButton
+          onPress={() => router.back()}
+          className="px-4 py-2 rounded-full"
+          style={{ backgroundColor: primaryTransparent }}
+        >
+          <Text className="text-xs font-bold" style={{ color: primaryColor }}>
+            返回上一页
+          </Text>
+        </BouncyButton>
       </View>
     );
 

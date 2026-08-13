@@ -96,7 +96,12 @@ apiClient.interceptors.response.use(
       return Promise.reject(error); // 拦截 40352，不抛出红屏错误
     }
 
-    if (error.response?.status !== 401) {
+    if (error.response?.status === 404) {
+      console.warn(
+        `⚠️ [API 404] 资源不存在: ${error.config?.url}`,
+        error.response?.data?.error?.message || '',
+      );
+    } else if (error.response?.status !== 401) {
       console.error(
         'API 请求错误:',
         error.response?.status,

@@ -399,13 +399,15 @@ export const FeedCard = ({ item, tab }: { item: FeedItem; tab?: string }) => {
         />
       </BouncyButton>
 
-      <CustomContextMenu
-        visible={previewVisible}
-        onClose={() => setPreviewVisible(false)}
-        previewContent={<FeedCardPreview item={item} />}
-        options={menuOptions}
-        originLayout={originLayout}
-      />
+      {previewVisible && (
+        <CustomContextMenu
+          visible={previewVisible}
+          onClose={() => setPreviewVisible(false)}
+          previewContent={<FeedCardPreview item={item} />}
+          options={menuOptions}
+          originLayout={originLayout}
+        />
+      )}
     </RNView>
   );
 };

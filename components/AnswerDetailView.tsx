@@ -23,6 +23,7 @@ import {
   removeFromCollection,
 } from '@/api/zhihu/collection';
 import { followMember, unfollowMember } from '@/api/zhihu/member';
+import { BouncyButton } from '@/components/BouncyButton';
 import { DownvoteButton } from '@/components/DownvoteButton';
 import { LikeButton } from '@/components/LikeButton';
 import { MenuOption } from '@/components/MenuOption';
@@ -92,12 +93,16 @@ export const AnswerDetailView = ({
   const {
     data: answer,
     isLoading: queryLoading,
+    isError,
+    error,
     refetch,
   } = useQuery({
     queryKey: ['answer-detail', id],
     queryFn: () => getAnswer(id),
     enabled: isFocused || shouldPreload,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: (failureCount, err: any) =>
+      err?.response?.status === 404 ? false : failureCount < 2,
   });
 
   const followMutation = useOptimisticToggle({
@@ -218,6 +223,7 @@ export const AnswerDetailView = ({
 
   const primaryColor = useThemeColor({}, 'primary');
   const primaryTransparent = useThemeColor({}, 'primaryTransparent');
+  const secondaryColor = useThemeColor({}, 'textSecondary');
   const warningColor = useThemeColor({}, 'warning');
 
   return (
@@ -355,6 +361,25 @@ export const AnswerDetailView = ({
             <Text type="secondary" className="mt-[15px]">
               正在斟酌文字...喵
             </Text>
+          </View>
+        ) : isError || (error as any)?.response?.status === 404 ? (
+          <View className="h-[300px] justify-center items-center px-6 bg-transparent">
+            <Ionicons name="compass-outline" size={48} color={secondaryColor} />
+            <Text className="text-base font-bold mt-4 mb-2 text-foreground dark:text-foreground-dark">
+              你似乎来到了没有知识存在的荒原
+            </Text>
+            <Text type="secondary" className="text-xs text-center mb-6">
+              该回答可能已被删除、失效或暂不可见 喵~
+            </Text>
+            <BouncyButton
+              onPress={() => router.back()}
+              className="px-4 py-2 rounded-full"
+              style={{ backgroundColor: primaryTransparent }}
+            >
+              <Text className="text-xs font-bold" style={{ color: primaryColor }}>
+                返回上一页
+              </Text>
+            </BouncyButton>
           </View>
         ) : (
           <View className="px-5 pb-2 bg-transparent">
