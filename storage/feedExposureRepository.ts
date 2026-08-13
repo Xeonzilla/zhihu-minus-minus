@@ -132,18 +132,6 @@ class FeedExposureRepository {
     });
   }
 
-  async clearContext(context: FeedExposureContext): Promise<void> {
-    if (!this.isValidContext(context)) return;
-    await this.ensureMaintained();
-    await localDatabase.run(async (database) => {
-      await database.runAsync(
-        `DELETE FROM recent_feed_exposures
-         WHERE account_key = ? AND feed_type = ?`,
-        [context.accountKey, context.feedType],
-      );
-    });
-  }
-
   async clearAccount(accountKey: string): Promise<void> {
     if (!accountKey.trim()) return;
     await this.ensureMaintained();
