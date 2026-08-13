@@ -1,7 +1,7 @@
 import { openDatabaseAsync, type SQLiteDatabase } from 'expo-sqlite';
 
 const DATABASE_NAME = 'local-data.db';
-const DATABASE_VERSION = 1;
+const DATABASE_VERSION = 2;
 
 interface UserVersionRow {
   user_version: number;
@@ -42,6 +42,19 @@ const MIGRATIONS: DatabaseMigration[] = [
         );
       CREATE INDEX recent_feed_exposures_time_idx
         ON recent_feed_exposures (last_exposed_at DESC);
+    `,
+  },
+  {
+    version: 2,
+    sql: `
+      CREATE TABLE feed_cache (
+        account_key TEXT NOT NULL CHECK (length(account_key) > 0),
+        feed_type TEXT NOT NULL CHECK (length(feed_type) > 0),
+        items_json TEXT NOT NULL,
+        next_url TEXT,
+        updated_at INTEGER NOT NULL,
+        PRIMARY KEY (account_key, feed_type)
+      );
     `,
   },
 ];

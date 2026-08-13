@@ -62,6 +62,7 @@ export default function AppearanceSettings() {
     enablePrivateMessaging,
     enableBrowseHistory,
     enableLocalFeedDedup,
+    enableFeedCacheOnLaunch,
     pressOpacity,
     pressScale,
     androidFeedbackType,
@@ -577,6 +578,19 @@ export default function AppearanceSettings() {
               value={enableLocalFeedDedup}
               onValueChange={(val) =>
                 updateSettings({ enableLocalFeedDedup: val })
+              }
+              trackColor={{ true: tintColor }}
+            />
+          </SettingItem>
+          <SettingItem
+            label="启动时保留推荐流"
+            icon="bookmark-outline"
+            colorScheme={colorScheme}
+          >
+            <Switch
+              value={enableFeedCacheOnLaunch}
+              onValueChange={(val) =>
+                updateSettings({ enableFeedCacheOnLaunch: val })
               }
               trackColor={{ true: tintColor }}
             />

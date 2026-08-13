@@ -1,3 +1,4 @@
+import { feedCacheRepository } from './feedCacheRepository';
 import { feedExposureRepository } from './feedExposureRepository';
 
 /**
@@ -8,5 +9,8 @@ import { feedExposureRepository } from './feedExposureRepository';
  * here as well.
  */
 export async function clearLocalAccountData(accountKey: string): Promise<void> {
-  await feedExposureRepository.clearAccount(accountKey);
+  await Promise.all([
+    feedExposureRepository.clearAccount(accountKey),
+    feedCacheRepository.clearAccountCache(accountKey),
+  ]);
 }

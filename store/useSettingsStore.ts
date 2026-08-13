@@ -49,6 +49,8 @@ export interface AppSettings {
   enableBrowseHistory: boolean;
   /** 是否在本地记录并过滤近期看过的推荐内容 */
   enableLocalFeedDedup: boolean;
+  /** 是否在冷启动时保留上次的推荐流内容 */
+  enableFeedCacheOnLaunch: boolean;
 }
 
 interface SettingsState extends AppSettings {
@@ -71,6 +73,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   androidFeedbackType: 'ripple',
   enableBrowseHistory: true,
   enableLocalFeedDedup: false,
+  enableFeedCacheOnLaunch: false,
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -104,7 +107,7 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'zhihu-settings-storage',
       storage: createJSONStorage(() => settingsStorage),
-      version: 6,
+      version: 7,
       migrate: (persistedState: any, version: number) => {
         // 清理历史脏数据：null 或非法 hex 都退回默认蓝
         const sanitized = sanitizeColor(persistedState?.primaryColor);
@@ -130,6 +133,11 @@ export const useSettingsStore = create<SettingsState>()(
         if (version < 6) {
           persistedState.enableLocalFeedDedup =
             persistedState.enableLocalFeedDedup ?? false;
+        }
+
+        if (version < 7) {
+          persistedState.enableFeedCacheOnLaunch =
+            persistedState.enableFeedCacheOnLaunch ?? false;
         }
 
         return persistedState as SettingsState;
