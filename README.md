@@ -191,4 +191,4 @@ npm run ios
 </a>
 
 ---
-**Version**: v0.2.1 | **Last Updated**: 2026-08-10
+**Version**: v0.3.0 | **Last Updated**: 2026-08-14

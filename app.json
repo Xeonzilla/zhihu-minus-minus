@@ -2,7 +2,7 @@
   "expo": {
     "name": "知乎--",
     "slug": "ZhihuMinusMinus",
-    "version": "0.2.1",
+    "version": "0.3.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "zhihu--",
@@ -43,7 +43,9 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.huamu013.ZhihuMinusMinus",
-      "permissions": ["REQUEST_INSTALL_PACKAGES"],
+      "permissions": [
+        "REQUEST_INSTALL_PACKAGES"
+      ],
       "intentFilters": [
         {
           "action": "VIEW",
@@ -129,7 +131,10 @@
               "pathPrefix": "/collection/"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         },
         {
           "action": "VIEW",
@@ -140,7 +145,10 @@
               "pathPrefix": "/p/"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         },
         {
           "action": "VIEW",
@@ -186,7 +194,10 @@
               "pathPrefix": "/pins/"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         },
         {
           "action": "VIEW",
@@ -195,7 +206,10 @@
               "scheme": "zhihu"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -235,6 +249,10 @@
       "router": {},
       "sentryDsn": "https://93a6099dd49b040d9c516485eb3c72f6@o4511051860672512.ingest.de.sentry.io/4511051866112080",
       "releaseNotes": {
+        "v0.3.0": [
+          "推荐流本地去重（实验性）: 为「推荐」与「同城」Tab 增加可选的本地已看去重，支持基于曝光判定（面积≥50% 且停留≥800ms）快照式过滤已看内容，支持 SQLite 自动淘汰清理与账号隔离管理；可在「外观与定制 → 实验性功能」中开启。",
+          "优雅 404 无知识荒原展示: 详情页与内容加载针对 404 错误禁止无效重试，第一时间呈现“荒原”占位及返回导航；静默拦截控制台日志堆栈与无效链接弹窗。"
+        ],
         "v0.2.0": [
           "导航栏自适应与发布页定制: 允许自由隐藏/展示“发布”栏目；重构顶部胶囊导航栏渐隐与平滑指示动画，解决多栏目切换时的错位与抖动问题。",
           "多款精选调和主题色: 重构主题配色面板，新增樱花粉、蜜桃粉、极客靛、薄荷青、翡翠绿等多款高颜值为阅读优化的主题预设。"
@@ -252,8 +270,8 @@
           "基础稳定性优化: 修复了若干 UI 细节与已知的小概率崩溃问题。"
         ]
       },
-      "status": "🚀 v0.2.1 - 核心功能与导航架构迭代完成",
-      "lastUpdated": "2026-08-10",
+      "status": "🚀 v0.3.0 - 404荒原优雅展示与个人页数据修复完成",
+      "lastUpdated": "2026-08-14",
       "eas": {
         "projectId": "faa0f061-50e6-4ec4-bb6f-accda0dbd24f"
       }
