@@ -280,7 +280,7 @@ export default function UserDetailScreen() {
     queryFn: async ({ pageParam = 0 }) => {
       const targetId = (user?.url_token || id) as string;
       const include =
-        'data[*].content,data[*].voteup_count,data[*].comment_count,data[*].favlists_count,data[*].created_time,data[*].updated_time,data[*].excerpt,data[*].question.title,data[*].relationship.voting,data[*].relationship.is_thanked';
+        'data[*].is_normal,admin_closed_comment,content,voteup_count,comment_count,favlists_count,created_time,updated_time,excerpt,relationship.voting,relationship.is_author,relationship.is_thanked;data[*].author;data[*].question.title';
       try {
         return await getMemberRelations(targetId, 'answers', {
           limit: 20,
@@ -308,7 +308,7 @@ export default function UserDetailScreen() {
     queryFn: async ({ pageParam = 0 }) => {
       const targetId = (user?.url_token || id) as string;
       const include =
-        'data[*].created,data[*].answer_count,data[*].follower_count,data[*].author,data[*].admin_closed_comment,data[*].relationship.is_following';
+        'data[*].created,answer_count,follower_count,admin_closed_comment,title,relationship.is_following;data[*].author';
       try {
         return await getMemberRelations(targetId, 'questions', {
           limit: 20,
@@ -335,7 +335,7 @@ export default function UserDetailScreen() {
     queryFn: async ({ pageParam = 0 }) => {
       const targetId = (user?.url_token || id) as string;
       const include =
-        'data[*].comment_count,data[*].content,data[*].voteup_count,data[*].favlists_count,data[*].created,data[*].updated,data[*].title,data[*].excerpt,data[*].relationship.voting';
+        'data[*].comment_count,content,voteup_count,favlists_count,created,updated,title,excerpt,relationship.voting;data[*].author';
       try {
         return await getMemberRelations(targetId, 'articles', {
           limit: 20,
@@ -362,7 +362,7 @@ export default function UserDetailScreen() {
     queryFn: async ({ pageParam = 0 }) => {
       const targetId = (user?.url_token || id) as string;
       const include =
-        'data[*].content,data[*].reaction_count,data[*].comment_count,data[*].created,data[*].relationship.voting';
+        'data[*].content,reaction_count,comment_count,created,relationship.voting;data[*].author';
       try {
         return await getMemberRelations(targetId, 'pins', {
           limit: 20,
@@ -851,13 +851,26 @@ export default function UserDetailScreen() {
       excerpt: getExcerptText(),
       image: imageUrl,
       voteCount:
-        displayItem.voteup_count ||
-        displayItem.like_count ||
-        displayItem.reaction_count ||
+        displayItem.voteup_count ??
+        displayItem.like_count ??
+        displayItem.reaction_count ??
+        displayItem.reaction?.statistics?.like_count ??
         0,
-      commentCount: displayItem.comment_count || 0,
-      favlistsCount: displayItem.favlists_count || 0,
-      voted: displayItem.relationship?.voting || 0,
+      commentCount:
+        displayItem.comment_count ??
+        displayItem.reaction?.statistics?.comments ??
+        0,
+      favlistsCount:
+        displayItem.favlists_count ??
+        displayItem.favorite_count ??
+        displayItem.reaction?.statistics?.favorites ??
+        0,
+      voted:
+        displayItem.relationship?.voting !== undefined
+          ? displayItem.relationship.voting
+          : displayItem.reaction?.relation?.liked
+            ? 1
+            : 0,
       type: mappedType,
     };
 

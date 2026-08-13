@@ -53,7 +53,11 @@ export const CreationCard = React.forwardRef(
       item?.id ? state.collectedCountOffsetMap[item.id.toString()] || 0 : 0,
     );
     const displayCount =
-      (item?.favlists_count || item?.favlistsCount || 0) + storeOffset;
+      (item?.favlists_count ??
+        item?.favlistsCount ??
+        item?.favorite_count ??
+        item?.reaction?.statistics?.favorites ??
+        0) + storeOffset;
     const { toggleCollect } = useCollectionAction();
 
     React.useImperativeHandle(ref, () => ({
@@ -343,12 +347,18 @@ export const CreationCard = React.forwardRef(
               <LikeButton
                 id={item.id}
                 count={
-                  item.reaction?.statistics?.like_count ||
-                  item.voteup_count ||
-                  item.reaction_count ||
+                  item.reaction?.statistics?.like_count ??
+                  item.voteup_count ??
+                  item.reaction_count ??
                   0
                 }
-                voted={item.relationship?.voting || 0}
+                voted={
+                  item.relationship?.voting !== undefined
+                    ? item.relationship.voting
+                    : item.reaction?.relation?.liked
+                      ? 1
+                      : 0
+                }
                 type={
                   type === 'article'
                     ? 'articles'
