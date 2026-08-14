@@ -71,9 +71,6 @@ const AnswerItem = forwardRef(
       isExpanded,
       onToggle,
       onShare,
-      questionId,
-      questionTitle,
-      sortBy,
       screenTranslateX,
       onSwipeStart,
       onSwipeComplete,
@@ -708,7 +705,6 @@ export default function QuestionDetail() {
 
   const {
     data: answersData,
-    isLoading: aLoading,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,

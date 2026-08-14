@@ -190,8 +190,6 @@ export function View(
   return <DefaultView style={[{ backgroundColor }, style]} {...otherProps} />;
 }
 
-type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
-
 export function ThemedIcon(
   props: Omit<React.ComponentProps<typeof Ionicons>, 'color'> & {
     colorType?:

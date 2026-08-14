@@ -291,7 +291,6 @@ const P_Renderer: CustomBlockRenderer = ({ TDefaultRenderer, ...props }) => {
   const {
     segmentMap,
     onPress,
-    findActiveInteraction,
     fontSizeScale = 1.0,
     lineHeightScale = 1.5,
   } = rendererProps as any;

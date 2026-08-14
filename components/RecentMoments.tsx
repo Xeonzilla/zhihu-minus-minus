@@ -14,7 +14,7 @@ export function RecentMoments() {
   const primaryColor = useThemeColor({}, 'primary');
   const dangerColor = useThemeColor({}, 'danger');
 
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ['recent-moments'],
     queryFn: fetchRecentMoments,
     // 每 5 分钟自动刷新一次

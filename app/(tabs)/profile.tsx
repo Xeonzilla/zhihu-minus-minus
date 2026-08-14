@@ -36,11 +36,9 @@ export default function ProfileScreen() {
   const { enablePrivateMessaging } = useSettingsStore();
   const {
     cookies,
-    setMe,
     accounts,
     activeAccountIndex,
     switchAccount,
-    addAccount,
     removeAccount,
     logout,
   } = useAuthStore();

@@ -616,7 +616,6 @@ const _AnimatedIcon = Animated.createAnimatedComponent(Ionicons);
 
 function BottomTabIcon({
   icon,
-  active,
   onPress,
   color,
   size = 24,

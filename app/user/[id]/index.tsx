@@ -448,7 +448,6 @@ export default function UserDetailScreen() {
     hasNextPage: hasNextSearchPage,
     isFetchingNextPage: isFetchingNextSearchPage,
     isLoading: searchLoading,
-    refetch: refetchSearch,
   } = useInfiniteQuery({
     queryKey: ['user-creations-search', user?.id, debouncedSearchQuery],
     queryFn: ({ pageParam = 0 }) =>

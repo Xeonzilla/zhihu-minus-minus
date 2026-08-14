@@ -3,7 +3,7 @@ import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo } from 'react';
-import { Dimensions, Image, Pressable } from 'react-native';
+import { Image, Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -17,8 +17,6 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { refreshInfiniteQuery } from '@/utils/query';
 import { BouncyButton } from './BouncyButton';
-
-const { width } = Dimensions.get('window');
 
 // --- 类型定义 ---
 type Story = {

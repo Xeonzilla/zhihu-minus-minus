@@ -52,7 +52,6 @@ interface AnswerDetailViewProps {
 
 export const AnswerDetailView = ({
   id,
-  initialTitle,
   questionId,
   onScroll,
   isFocused = false,
