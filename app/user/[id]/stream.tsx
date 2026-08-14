@@ -47,7 +47,6 @@ const StreamItem = forwardRef(
       isExpanded,
       onToggle,
       onShare,
-      isHighlighted,
       isCollapsedHighlighted,
     }: {
       item: any;
@@ -468,7 +467,7 @@ export default function UserStreamScreen() {
       if (v.item) {
         let displayItem = v.item;
         if (activeTab === 'activities') displayItem = v.item.target || v.item;
-        if (displayItem && displayItem.id) {
+        if (displayItem?.id) {
           const idStr = displayItem.id.toString();
           ids.push(idStr);
           if (!firstActive) {
@@ -491,11 +490,7 @@ export default function UserStreamScreen() {
     if (now - lastCheckTime.current > 50) {
       lastCheckTime.current = now;
 
-      if (
-        activeItem &&
-        activeItem.id &&
-        expandedIds.has(activeItem.id.toString())
-      ) {
+      if (activeItem?.id && expandedIds.has(activeItem.id.toString())) {
         const layout = itemLayouts.current.get(activeItem.id.toString());
         if (layout) {
           const headerHeight = 56;
@@ -664,7 +659,7 @@ export default function UserStreamScreen() {
     [streamItems, activeTab, insets.top],
   );
 
-  const renderItemContent = ({ item, index }: { item: any; index: number }) => {
+  const renderItemContent = ({ item }: { item: any; index: number }) => {
     let displayItem = item as any;
     if (activeTab === 'activities') displayItem = item.target || item;
     if (!displayItem || (!displayItem.id && !displayItem.url)) return null;
