@@ -172,23 +172,20 @@ export function View(
 ) {
   const { style, lightColor, darkColor, type, ...otherProps } = props;
 
-  let backgroundColor: string | undefined;
+  let colorName: keyof typeof Colors.light & keyof typeof Colors.dark =
+    'background';
+  if (type === 'surface' || type === 'secondary')
+    colorName = 'backgroundSecondary';
+  else if (type === 'border') colorName = 'border';
+  else if (type === 'tertiary') colorName = 'backgroundTertiary';
+  else if (type === 'divider') colorName = 'divider';
+  else if (type === 'primaryTransparent') colorName = 'primaryTransparent';
 
-  if (type) {
-    let colorName: keyof typeof Colors.light & keyof typeof Colors.dark =
-      'background';
-    if (type === 'surface' || type === 'secondary')
-      colorName = 'backgroundSecondary';
-    else if (type === 'border') colorName = 'border';
-    else if (type === 'tertiary') colorName = 'backgroundTertiary';
-    else if (type === 'divider') colorName = 'divider';
-    else if (type === 'primaryTransparent') colorName = 'primaryTransparent';
-
-    backgroundColor = useThemeColor(
-      { light: lightColor, dark: darkColor },
-      colorName,
-    );
-  }
+  const themedBackgroundColor = useThemeColor(
+    { light: lightColor, dark: darkColor },
+    colorName,
+  );
+  const backgroundColor = type ? themedBackgroundColor : undefined;
 
   return <DefaultView style={[{ backgroundColor }, style]} {...otherProps} />;
 }
