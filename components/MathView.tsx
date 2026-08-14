@@ -1,7 +1,6 @@
 'use dom';
 
 import katex from 'katex';
-import React from 'react';
 
 interface MathViewProps {
   formula: string;

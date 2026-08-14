@@ -1,5 +1,5 @@
 import Constants from 'expo-constants';
-import { Directory, File, Paths } from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 import * as FileSystem from 'expo-file-system/legacy';
 import {
   createDownloadResumable,
@@ -154,7 +154,7 @@ async function downloadAndInstallApk(
       } else {
         await (FileSystem as any).deleteAsync(fileUri, { idempotent: true });
       }
-    } catch (e) {}
+    } catch (_e) {}
 
     showToast('开始下载更新...');
 

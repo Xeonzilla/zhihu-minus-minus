@@ -1,6 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { Modal, Pressable, Share, StyleSheet } from 'react-native';
+import { Modal, Pressable, Share } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '@/constants/Colors';
 import { useCollectionAction } from '@/hooks/useCollectionAction';
@@ -34,7 +32,7 @@ export function ShareMenu({ visible, onClose, type, data }: ShareMenuProps) {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const surfaceColor = Colors[colorScheme].surface;
-  const textColor = Colors[colorScheme].text;
+  const _textColor = Colors[colorScheme].text;
 
   const isCollected = useCollectionStore((state) =>
     data ? !!state.collectedStatusMap[data.id.toString()] : false,
@@ -70,7 +68,7 @@ export function ShareMenu({ visible, onClose, type, data }: ShareMenuProps) {
         title: data.title || '知乎分享',
       });
       onClose();
-    } catch (error) {
+    } catch (_error) {
       showToast('分享失败');
     }
   };

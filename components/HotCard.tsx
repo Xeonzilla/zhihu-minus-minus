@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Image } from 'react-native';
 import Animated, { SharedTransition } from 'react-native-reanimated';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
@@ -8,7 +7,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { BouncyButton } from './BouncyButton';
 import { Text, View } from './Themed';
 
-const slowTransition = SharedTransition.duration(600);
+const _slowTransition = SharedTransition.duration(600);
 
 export interface HotItem {
   id: string;
@@ -34,7 +33,7 @@ export const HotCard = ({ item }: { item: HotItem }) => {
   const colorScheme = useColorScheme();
   const isGuest = !cookies;
 
-  const isTop3 = item.rank <= 3;
+  const _isTop3 = item.rank <= 3;
 
   // Custom Rank Colors
   const rankBgColor =

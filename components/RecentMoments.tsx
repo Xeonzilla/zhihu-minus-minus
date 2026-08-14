@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import React from 'react';
 import { Image, Pressable, ScrollView } from 'react-native';
 import { fetchRecentMoments } from '@/api/zhihu';
-import Colors from '@/constants/Colors';
 import { Text, useThemeColor, View } from './Themed';
 import { useColorScheme } from './useColorScheme';
 
@@ -12,7 +10,7 @@ import { useColorScheme } from './useColorScheme';
  */
 export function RecentMoments() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
+  const _colorScheme = useColorScheme();
   const primaryColor = useThemeColor({}, 'primary');
   const dangerColor = useThemeColor({}, 'danger');
 

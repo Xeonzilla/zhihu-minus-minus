@@ -26,7 +26,7 @@ export const DownvoteButton = ({
   const [voted, setVoted] = useState(initialVoted);
   const [loading, setLoading] = useState(false);
   const scale = useSharedValue(1);
-  const colorScheme = useColorScheme();
+  const _colorScheme = useColorScheme();
   const tintColor = useThemeColor({}, 'primary');
 
   React.useEffect(() => {

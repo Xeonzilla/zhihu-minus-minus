@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -31,7 +31,7 @@ import { Text, useThemeColor, View } from './Themed';
 export function CollectionSelectorModal() {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const _isDark = colorScheme === 'dark';
   const queryClient = useQueryClient();
 
   const {
@@ -96,7 +96,7 @@ export function CollectionSelectorModal() {
         }
       }
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (_, _variables) => {
       refetch().then((updated) => {
         const idStr = selectorContentId?.toString();
         if (idStr) {

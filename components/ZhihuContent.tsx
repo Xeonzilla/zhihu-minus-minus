@@ -26,7 +26,7 @@ import RenderHtml, {
   defaultSystemFonts,
   useRendererProps,
 } from 'react-native-render-html';
-import Svg, { Line, SvgUri } from 'react-native-svg';
+import { SvgUri } from 'react-native-svg';
 import {
   createSegmentReaction,
   getAnswer,

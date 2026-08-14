@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import React, { useEffect } from 'react';
 import { Animated, Modal, Pressable, StyleSheet } from 'react-native';

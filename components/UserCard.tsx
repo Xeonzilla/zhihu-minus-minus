@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ActivityIndicator, Image, Pressable } from 'react-native';
 import { followMember, unfollowMember } from '@/api/zhihu';
 import { useColorScheme } from '@/components/useColorScheme';

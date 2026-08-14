@@ -96,7 +96,7 @@ export const LaTeXRenderer: React.FC<LaTeXRendererProps> = ({
             if (data.height && data.height > 0) {
               setHeight(Math.max(data.height, inline ? 20 : 40));
             }
-          } catch (e) {}
+          } catch (_e) {}
           setLoading(false);
         }}
         onLoadEnd={() => setLoading(false)}

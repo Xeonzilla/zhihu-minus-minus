@@ -171,7 +171,7 @@ export const AnswerDetailView = ({
     answer?.reaction?.relation?.faved ||
     answer?.relationship?.is_favorited ||
     false;
-  const activeCollected =
+  const _activeCollected =
     storeCollected !== undefined
       ? storeCollected
       : isCollected !== undefined
@@ -180,7 +180,7 @@ export const AnswerDetailView = ({
   const storeOffset = useCollectionStore(
     (state) => state.collectedCountOffsetMap[id.toString()] || 0,
   );
-  const displayCount = (answer?.favlists_count || 0) + storeOffset;
+  const _displayCount = (answer?.favlists_count || 0) + storeOffset;
 
   React.useEffect(() => {
     if (collectionStatus) {
@@ -376,7 +376,10 @@ export const AnswerDetailView = ({
               className="px-4 py-2 rounded-full"
               style={{ backgroundColor: primaryTransparent }}
             >
-              <Text className="text-xs font-bold" style={{ color: primaryColor }}>
+              <Text
+                className="text-xs font-bold"
+                style={{ color: primaryColor }}
+              >
                 返回上一页
               </Text>
             </BouncyButton>
