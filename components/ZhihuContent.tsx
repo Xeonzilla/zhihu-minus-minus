@@ -283,6 +283,8 @@ function getTNodeText(node: any): string {
 const P_Renderer: CustomBlockRenderer = ({ TDefaultRenderer, ...props }) => {
   const { tnode } = props;
   const rendererProps = useRendererProps('p');
+  const textColor = useThemeColor({}, 'text');
+  const lightPrimaryColor = useThemeColor({}, 'primary_60');
 
   if (!rendererProps) return <TDefaultRenderer {...props} />;
 
@@ -303,9 +305,6 @@ const P_Renderer: CustomBlockRenderer = ({ TDefaultRenderer, ...props }) => {
   if (!hasAnyInteraction) {
     return <TDefaultRenderer {...props} />;
   }
-
-  const textColor = useThemeColor({}, 'text');
-  const lightPrimaryColor = useThemeColor({}, 'primary_60');
 
   const textFontSize = 17 * fontSizeScale;
   const textLineHeight = 17 * lineHeightScale;
