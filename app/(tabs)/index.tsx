@@ -45,11 +45,11 @@ import { RecentMoments } from '@/components/RecentMoments';
 import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { feedCacheRepository } from '@/storage/feedCacheRepository';
 import {
   type FeedExposureContext,
   feedExposureRepository,
 } from '@/storage/feedExposureRepository';
-import { feedCacheRepository } from '@/storage/feedCacheRepository';
 import { useAuthStore } from '@/store/useAuthStore';
 import { type TabKey, useSettingsStore } from '@/store/useSettingsStore';
 import { supportsLocalFeedDedup } from '@/utils/feedDedup';
@@ -684,7 +684,7 @@ const FeedList = React.forwardRef<
     const { cookies, me } = useAuthStore();
     const { enableLocalFeedDedup, enableFeedCacheOnLaunch } =
       useSettingsStore();
-    const colorScheme = useColorScheme();
+    const _colorScheme = useColorScheme();
     const tintColor = useThemeColor({}, 'primary');
     const [isRefreshing, setIsRefreshing] = useState(false);
 

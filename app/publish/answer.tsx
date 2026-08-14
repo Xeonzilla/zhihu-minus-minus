@@ -1,13 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
   Pressable,
-  ScrollView,
-  StyleSheet,
   TextInput,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,7 +22,7 @@ export default function PublishAnswerScreen() {
   const textColor = Colors[colorScheme].text;
   const secondaryColor = Colors[colorScheme].textSecondary;
   const borderCol = Colors[colorScheme].border;
-  const backgroundColor = Colors[colorScheme].background;
+  const _backgroundColor = Colors[colorScheme].background;
 
   const [activeTab, setActiveTab] = useState<'search' | 'invite'>('search');
   const [query, setQuery] = useState('');
@@ -171,7 +169,7 @@ export default function PublishAnswerScreen() {
           <View className="px-5 py-3">
             <View
               className="flex-row items-center px-3 py-2.5 rounded-xl"
-              style={{ backgroundColor: borderCol + '30' }}
+              style={{ backgroundColor: `${borderCol}30` }}
             >
               <Ionicons name="search" size={18} color={secondaryColor} />
               <TextInput
@@ -195,7 +193,7 @@ export default function PublishAnswerScreen() {
           <FlatList
             data={searchResults?.data || []}
             renderItem={renderQuestionItem}
-            keyExtractor={(item, index) => index.toString()}
+            keyExtractor={(_item, index) => index.toString()}
             ListEmptyComponent={() => (
               <View className="flex-1 justify-center items-center mt-20 px-10">
                 <Ionicons name="search-outline" size={64} color={borderCol} />
@@ -221,7 +219,7 @@ export default function PublishAnswerScreen() {
             <FlatList
               data={invitedResults?.data || []}
               renderItem={renderQuestionItem}
-              keyExtractor={(item, index) => index.toString()}
+              keyExtractor={(_item, index) => index.toString()}
               ListEmptyComponent={() => (
                 <View className="flex-1 justify-center items-center mt-20 px-10">
                   <Ionicons name="mail-outline" size={64} color={borderCol} />

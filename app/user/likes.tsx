@@ -1,7 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigation } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 import { getMyLikes } from '@/api/zhihu';
 import { CreationCard } from '@/components/CreationCard';

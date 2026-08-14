@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import React, { useCallback } from 'react';
+import React from 'react';
 import {
   Alert,
   Image,
@@ -12,7 +12,6 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
-  StyleSheet,
   Switch,
 } from 'react-native';
 import { getMe, getMember } from '@/api/zhihu';
@@ -32,8 +31,8 @@ export default function ProfileScreen() {
   const { isDark, toggleTheme } = useThemeStore();
   const accentColor = useThemeColor({}, 'primary');
   const accentBgColor = useThemeColor({}, 'primaryTransparent');
-  const surfaceColor = Colors[colorScheme].surface;
-  const textColor = Colors[colorScheme].text;
+  const _surfaceColor = Colors[colorScheme].surface;
+  const _textColor = Colors[colorScheme].text;
   const { enablePrivateMessaging } = useSettingsStore();
   const {
     cookies,
@@ -585,7 +584,7 @@ function MenuItem({ icon, title, color = '#666', right, onPress }: any) {
       <View className="flex-row items-center bg-transparent">
         <View
           className="w-9 h-9 rounded-lg justify-center items-center"
-          style={{ backgroundColor: color + '15' }}
+          style={{ backgroundColor: `${color}15` }}
         >
           <Ionicons name={icon} size={20} color={color} />
         </View>

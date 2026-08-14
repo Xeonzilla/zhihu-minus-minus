@@ -19,13 +19,10 @@ import {
   Animated,
   Image,
   LayoutAnimation,
-  Modal,
   View as NativeView,
   PanResponder,
   Platform,
   Pressable,
-  Share,
-  StyleSheet,
   UIManager,
   useWindowDimensions,
 } from 'react-native';
@@ -51,7 +48,6 @@ import {
 } from '@/api/zhihu/question';
 import { BouncyButton } from '@/components/BouncyButton';
 import { LikeButton } from '@/components/LikeButton';
-import { MenuOption } from '@/components/MenuOption';
 import { ShareMenu } from '@/components/ShareMenu';
 import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -65,10 +61,8 @@ import { useZhihuInfiniteQuery } from '@/hooks/useZhihuInfiniteQuery';
 import { useCollectionStore } from '@/store/useCollectionStore';
 import { useProgressStore } from '@/store/useProgressStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import { copyToClipboard } from '@/utils/clipboard';
 import { formatDate } from '@/utils/date';
 import { refreshInfiniteQuery } from '@/utils/query';
-import { showToast } from '@/utils/toast';
 
 const AnswerItem = forwardRef(
   (
@@ -100,7 +94,7 @@ const AnswerItem = forwardRef(
     const { width: screenWidth } = useWindowDimensions();
     const colorScheme = useColorScheme();
     const router = useRouter();
-    const textColor = Colors[colorScheme].text;
+    const _textColor = Colors[colorScheme].text;
     const queryClient = useQueryClient();
     const footerRef = useRef<NativeView>(null);
 
@@ -184,7 +178,7 @@ const AnswerItem = forwardRef(
     const panResponder = useRef(
       PanResponder.create({
         onStartShouldSetPanResponderCapture: () => false,
-        onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
+        onMoveShouldSetPanResponderCapture: (_evt, gestureState) => {
           // 仅在向左滑动且存在 author.url_token 时拦截手势
           const currentItem = itemRef.current;
           const isHorizontal =
@@ -198,11 +192,11 @@ const AnswerItem = forwardRef(
             runOnJS(onSwipeStartRef.current)(currentItem.author);
           }
         },
-        onPanResponderMove: (evt, gestureState) => {
+        onPanResponderMove: (_evt, gestureState) => {
           // 只允许向左侧滑动（偏移量 <= 0）
           screenTranslateX.value = Math.min(0, gestureState.dx);
         },
-        onPanResponderRelease: (evt, gestureState) => {
+        onPanResponderRelease: (_evt, gestureState) => {
           const currentItem = itemRef.current;
           if (gestureState.dx < -120) {
             screenTranslateX.value = withTiming(
@@ -234,7 +228,7 @@ const AnswerItem = forwardRef(
       rawText?.length > 120 ||
       item.content?.includes('<img') ||
       item.content?.includes('<figure');
-    const excerpt = isLongContent ? rawText.substring(0, 100) + '...' : rawText;
+    const excerpt = isLongContent ? `${rawText.substring(0, 100)}...` : rawText;
 
     const { fontSizeScale, lineHeightScale } = useSettingsStore();
 
@@ -676,7 +670,7 @@ export default function QuestionDetail() {
 
   const [sortBy, setSortBy] = useState<'default' | 'created'>('default');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const [menuVisible, setMenuVisible] = useState(false);
+  const [_menuVisible, _setMenuVisible] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<any>(null);
   const [detailExpanded, setDetailExpanded] = useState(false);
@@ -828,7 +822,7 @@ export default function QuestionDetail() {
           promises.push(
             new Promise((resolve) => {
               ref.measureFooter(
-                (x: number, y: number, w: number, h: number) => {
+                (_x: number, y: number, _w: number, _h: number) => {
                   const isVisible =
                     y > insets.top + 40 && y < screenHeight - 40;
                   resolve(isVisible);

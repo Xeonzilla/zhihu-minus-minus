@@ -1,7 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigation, useRouter } from 'expo-router';
-import React, { useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { ActivityIndicator, Image, StyleSheet } from 'react-native';
 import { getInbox, type InboxThread } from '@/api/zhihu';
 import { BouncyButton } from '@/components/BouncyButton';

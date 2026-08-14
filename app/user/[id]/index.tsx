@@ -49,7 +49,7 @@ type ProfileTabKey = (typeof PROFILE_TABS)[number]['key'];
 
 export default function UserDetailScreen() {
   const colorScheme = useColorScheme();
-  const insets = useSafeAreaInsets();
+  const _insets = useSafeAreaInsets();
   const { id, avatar: initialAvatar } = useLocalSearchParams();
   const router = useRouter();
   const navigation = useNavigation();
@@ -268,10 +268,9 @@ export default function UserDetailScreen() {
     getNextPageParam: (lastPage: any) => {
       if (!lastPage || lastPage.paging?.is_end) return undefined;
       const match = lastPage.paging?.next?.match(/offset=(\d+)/);
-      return match ? parseInt(match[1]) : undefined;
+      return match ? parseInt(match[1], 10) : undefined;
     },
-    enabled:
-      !!user && (visitedTabs['activities'] || activeTab === 'activities'),
+    enabled: !!user && (visitedTabs.activities || activeTab === 'activities'),
   });
 
   // 2. 回答 Query
@@ -297,9 +296,9 @@ export default function UserDetailScreen() {
     getNextPageParam: (lastPage: any) => {
       if (!lastPage || lastPage.paging?.is_end) return undefined;
       const match = lastPage.paging?.next?.match(/offset=(\d+)/);
-      return match ? parseInt(match[1]) : undefined;
+      return match ? parseInt(match[1], 10) : undefined;
     },
-    enabled: !!user && (visitedTabs['answers'] || activeTab === 'answers'),
+    enabled: !!user && (visitedTabs.answers || activeTab === 'answers'),
   });
 
   // 3. 提问 Query
@@ -324,9 +323,9 @@ export default function UserDetailScreen() {
     getNextPageParam: (lastPage: any) => {
       if (!lastPage || lastPage.paging?.is_end) return undefined;
       const match = lastPage.paging?.next?.match(/offset=(\d+)/);
-      return match ? parseInt(match[1]) : undefined;
+      return match ? parseInt(match[1], 10) : undefined;
     },
-    enabled: !!user && (visitedTabs['questions'] || activeTab === 'questions'),
+    enabled: !!user && (visitedTabs.questions || activeTab === 'questions'),
   });
 
   // 4. 文章 Query
@@ -351,9 +350,9 @@ export default function UserDetailScreen() {
     getNextPageParam: (lastPage: any) => {
       if (!lastPage || lastPage.paging?.is_end) return undefined;
       const match = lastPage.paging?.next?.match(/offset=(\d+)/);
-      return match ? parseInt(match[1]) : undefined;
+      return match ? parseInt(match[1], 10) : undefined;
     },
-    enabled: !!user && (visitedTabs['articles'] || activeTab === 'articles'),
+    enabled: !!user && (visitedTabs.articles || activeTab === 'articles'),
   });
 
   // 5. 想法 Query
@@ -378,9 +377,9 @@ export default function UserDetailScreen() {
     getNextPageParam: (lastPage: any) => {
       if (!lastPage || lastPage.paging?.is_end) return undefined;
       const match = lastPage.paging?.next?.match(/offset=(\d+)/);
-      return match ? parseInt(match[1]) : undefined;
+      return match ? parseInt(match[1], 10) : undefined;
     },
-    enabled: !!user && (visitedTabs['pins'] || activeTab === 'pins'),
+    enabled: !!user && (visitedTabs.pins || activeTab === 'pins'),
   });
 
   const getTabQueryState = (tabKey: ProfileTabKey) => {
@@ -463,7 +462,7 @@ export default function UserDetailScreen() {
     getNextPageParam: (lastPage) => {
       if (lastPage.paging?.is_end) return undefined;
       const match = lastPage.paging?.next?.match(/offset=(\d+)/);
-      return match ? parseInt(match[1]) : undefined;
+      return match ? parseInt(match[1], 10) : undefined;
     },
   });
 
@@ -509,7 +508,7 @@ export default function UserDetailScreen() {
     const highlight = item.highlight || {};
     return {
       id: obj.id,
-      type: obj.type + 's',
+      type: `${obj.type}s`,
       title: highlight.title
         ? HighlightText(highlight.title)
         : obj.question?.name || obj.title || '无标题',

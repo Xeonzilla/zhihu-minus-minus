@@ -32,7 +32,7 @@ export default function PinDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const queryClient = useQueryClient();
+  const _queryClient = useQueryClient();
   const textColor = Colors[colorScheme].text;
   const borderColor = Colors[colorScheme].border;
   const backgroundColor = Colors[colorScheme].background;

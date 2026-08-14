@@ -16,7 +16,6 @@ import { FeedCard } from '@/components/FeedCard';
 import { Text, useThemeColor, View } from '@/components/Themed';
 import { UserCard } from '@/components/UserCard';
 import { useColorScheme } from '@/components/useColorScheme';
-import Colors from '@/constants/Colors';
 import { useSearchStore } from '@/store/useSearchStore';
 
 /** 转义正则元字符，避免用户输入（如 "C++"）构造出非法正则 */
@@ -27,7 +26,7 @@ function escapeRegExp(str: string): string {
 export default function SearchScreen() {
   const colorScheme = useColorScheme();
   const router = useRouter();
-  const navigation = useNavigation();
+  const _navigation = useNavigation();
   const inputRef = useRef<TextInput>(null);
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -69,7 +68,7 @@ export default function SearchScreen() {
       if (lastPage.paging?.is_end) return undefined;
       const nextUrl = lastPage.paging?.next;
       const match = nextUrl?.match(/offset=(\d+)/);
-      return match ? parseInt(match[1]) : undefined;
+      return match ? parseInt(match[1], 10) : undefined;
     },
   });
 
@@ -127,7 +126,7 @@ export default function SearchScreen() {
     }
     return {
       id: obj.id ?? obj.question?.id ?? '',
-      type: obj.type + 's',
+      type: `${obj.type}s`,
       title: highlight.title
         ? HighlightText(highlight.title)
         : obj.question?.name || obj.title || '无标题',

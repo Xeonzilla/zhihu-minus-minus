@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -34,7 +34,7 @@ export default function FollowingScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('users');
-  const [currentPage, setCurrentPage] = useState(0);
+  const [_currentPage, setCurrentPage] = useState(0);
   const [visitedTabs, setVisitedTabs] = useState<Record<string, boolean>>({
     users: true,
   });
@@ -55,9 +55,9 @@ export default function FollowingScreen() {
       if (!lastPage || lastPage.paging?.is_end) return undefined;
       const nextUrl = lastPage.paging?.next;
       const match = nextUrl?.match(/offset=(\d+)/);
-      return match ? parseInt(match[1]) : undefined;
+      return match ? parseInt(match[1], 10) : undefined;
     },
-    enabled: visitedTabs['users'] || activeTab === 'users',
+    enabled: visitedTabs.users || activeTab === 'users',
   });
 
   // 2. 关注的专栏 Query
@@ -70,9 +70,9 @@ export default function FollowingScreen() {
       if (!lastPage || lastPage.paging?.is_end) return undefined;
       const nextUrl = lastPage.paging?.next;
       const match = nextUrl?.match(/offset=(\d+)/);
-      return match ? parseInt(match[1]) : undefined;
+      return match ? parseInt(match[1], 10) : undefined;
     },
-    enabled: visitedTabs['columns'] || activeTab === 'columns',
+    enabled: visitedTabs.columns || activeTab === 'columns',
   });
 
   // 3. 关注的话题 Query
@@ -85,9 +85,9 @@ export default function FollowingScreen() {
       if (!lastPage || lastPage.paging?.is_end) return undefined;
       const nextUrl = lastPage.paging?.next;
       const match = nextUrl?.match(/offset=(\d+)/);
-      return match ? parseInt(match[1]) : undefined;
+      return match ? parseInt(match[1], 10) : undefined;
     },
-    enabled: visitedTabs['topics'] || activeTab === 'topics',
+    enabled: visitedTabs.topics || activeTab === 'topics',
   });
 
   // 4. 关注的问题 Query
@@ -100,9 +100,9 @@ export default function FollowingScreen() {
       if (!lastPage || lastPage.paging?.is_end) return undefined;
       const nextUrl = lastPage.paging?.next;
       const match = nextUrl?.match(/offset=(\d+)/);
-      return match ? parseInt(match[1]) : undefined;
+      return match ? parseInt(match[1], 10) : undefined;
     },
-    enabled: visitedTabs['questions'] || activeTab === 'questions',
+    enabled: visitedTabs.questions || activeTab === 'questions',
   });
 
   // 5. 关注的收藏夹 Query
@@ -115,9 +115,9 @@ export default function FollowingScreen() {
       if (!lastPage || lastPage.paging?.is_end) return undefined;
       const nextUrl = lastPage.paging?.next;
       const match = nextUrl?.match(/offset=(\d+)/);
-      return match ? parseInt(match[1]) : undefined;
+      return match ? parseInt(match[1], 10) : undefined;
     },
-    enabled: visitedTabs['favlists'] || activeTab === 'favlists',
+    enabled: visitedTabs.favlists || activeTab === 'favlists',
   });
 
   const getQueryState = (tabKey: string) => {

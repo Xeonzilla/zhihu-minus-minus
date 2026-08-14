@@ -1,7 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -21,7 +20,7 @@ export default function WriteAnswerScreen() {
   const colorScheme = useColorScheme();
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const _insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const [content, setContent] = useState('');
 

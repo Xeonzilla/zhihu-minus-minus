@@ -2,8 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
-import { ActivityIndicator, Image, Pressable, StyleSheet } from 'react-native';
+import { useEffect } from 'react';
+import { ActivityIndicator, Image, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   followColumn,
@@ -22,7 +22,7 @@ import { formatDate } from '@/utils/date';
 export default function ColumnDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const _insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
 
   const tintColor = useThemeColor({}, 'primary');
@@ -81,7 +81,7 @@ export default function ColumnDetail() {
       if (!lastPage || lastPage.paging?.is_end) return undefined;
       const nextUrl = lastPage.paging?.next;
       const match = nextUrl?.match(/offset=(\d+)/);
-      return match ? parseInt(match[1]) : undefined;
+      return match ? parseInt(match[1], 10) : undefined;
     },
   });
 

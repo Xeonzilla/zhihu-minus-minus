@@ -6,7 +6,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { getNotifications, markAllNotificationsRead } from '@/api/zhihu';
 import { BouncyButton } from '@/components/BouncyButton';
-import { Text, ThemedIcon, useThemeColor, View } from '@/components/Themed';
+import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { formatDateTime } from '@/utils/date';
@@ -214,7 +214,7 @@ export default function NotificationScreen() {
           {item.content?.target?.text && (
             <View
               className="mt-2 p-2 rounded"
-              style={{ backgroundColor: borderColor + '20' }}
+              style={{ backgroundColor: `${borderColor}20` }}
             >
               <Text numberOfLines={1} type="secondary" className="text-xs">
                 {item.content.target.text}
@@ -250,7 +250,7 @@ export default function NotificationScreen() {
               className="px-4 py-1.5 mx-1 rounded-full"
               style={
                 selectedType === type.value
-                  ? { backgroundColor: primaryColor + '15' }
+                  ? { backgroundColor: `${primaryColor}15` }
                   : undefined
               }
             >

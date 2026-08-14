@@ -1,7 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet } from 'react-native';
 import { getCollection, getCollectionDetail } from '@/api/zhihu';
 import { CreationCard } from '@/components/CreationCard';
@@ -42,7 +42,7 @@ export default function CollectionDetailScreen() {
       if (!lastPage || lastPage.paging?.is_end) return undefined;
       const nextUrl = lastPage.paging?.next;
       const match = nextUrl?.match(/offset=(\d+)/);
-      return match ? parseInt(match[1]) : undefined;
+      return match ? parseInt(match[1], 10) : undefined;
     },
   });
 

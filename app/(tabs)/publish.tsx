@@ -1,5 +1,4 @@
 import { useRouter } from 'expo-router';
-import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BouncyButton } from '@/components/BouncyButton';
 import { Text, ThemedIcon, useThemeColor, View } from '@/components/Themed';
@@ -41,7 +40,7 @@ export default function PublishView() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const secondaryColor = Colors[colorScheme].textSecondary;
+  const _secondaryColor = Colors[colorScheme].textSecondary;
 
   const colors = {
     primary: useThemeColor({}, 'primary'),
@@ -78,7 +77,7 @@ export default function PublishView() {
           >
             <View
               className="w-14 h-14 rounded-2xl justify-center items-center mr-4"
-              style={{ backgroundColor: colors[item.colorType] + '15' }}
+              style={{ backgroundColor: `${colors[item.colorType]}15` }}
             >
               <ThemedIcon
                 name={item.icon}

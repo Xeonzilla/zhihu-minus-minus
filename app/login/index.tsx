@@ -2,7 +2,7 @@ import CookieManager from '@react-native-cookies/cookies';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { getMe } from '@/api/zhihu';
@@ -49,10 +49,10 @@ export default function LoginScreen() {
 
       // 只有当包含 z_c0 (登录 Token) 时且不为空时才认为是有效的登录 Cookie
       // 额外检查 __zse_ck 以确保环境验证成功 (知乎反爬字段)
-      const hasZc0 = !!mergedCookies['z_c0'];
+      const hasZc0 = !!mergedCookies.z_c0;
       // const hasZseCk = !!mergedCookies['__zse_ck'];
       const hasZseCk = true;
-      const hasDc0 = !!mergedCookies['d_c0'];
+      const hasDc0 = !!mergedCookies.d_c0;
 
       console.log(
         `📊 Cookie 状态: d_c0=${hasDc0}, z_c0=${hasZc0}, __zse_ck=${hasZseCk}`,

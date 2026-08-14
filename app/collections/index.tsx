@@ -6,7 +6,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { useNavigation, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -72,7 +72,7 @@ export default function MyCollectionsScreen() {
       if (!lastPage || lastPage.paging?.is_end) return undefined;
       const nextUrl = lastPage.paging?.next;
       const match = nextUrl?.match(/offset=(\d+)/);
-      return match ? parseInt(match[1]) : undefined;
+      return match ? parseInt(match[1], 10) : undefined;
     },
   });
 

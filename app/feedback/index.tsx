@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -57,7 +56,7 @@ export default function FeedbackScreen() {
             >
               <View
                 className="w-9 h-9 rounded-[10px] justify-center items-center"
-                style={{ backgroundColor: accentColor + '15' }}
+                style={{ backgroundColor: `${accentColor}15` }}
               >
                 <Ionicons name="logo-github" size={18} color={accentColor} />
               </View>
@@ -86,7 +85,7 @@ export default function FeedbackScreen() {
             >
               <View
                 className="w-9 h-9 rounded-[10px] justify-center items-center"
-                style={{ backgroundColor: accentColor + '15' }}
+                style={{ backgroundColor: `${accentColor}15` }}
               >
                 <Ionicons name="mail-outline" size={18} color={accentColor} />
               </View>

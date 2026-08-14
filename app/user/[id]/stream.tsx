@@ -4,12 +4,11 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, {
+import {
   forwardRef,
   useCallback,
   useEffect,
   useImperativeHandle,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -21,8 +20,6 @@ import {
   View as NativeView,
   Platform,
   Pressable,
-  SafeAreaView,
-  StyleSheet,
   UIManager,
   useWindowDimensions,
 } from 'react-native';
@@ -40,7 +37,6 @@ import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import { ZhihuContent } from '@/components/ZhihuContent';
 import Colors from '@/constants/Colors';
-import { ZhihuMemberRelation } from '@/types/zhihu';
 import { formatDate } from '@/utils/date';
 
 const StreamItem = forwardRef(
@@ -173,7 +169,7 @@ const StreamItem = forwardRef(
         (typeof item.content === 'string' &&
           (item.content.includes('<img') || item.content.includes('<figure'))));
 
-    const displayTypeForShare =
+    const _displayTypeForShare =
       type === 'answer' ? 'answer' : type === 'article' ? 'article' : 'pin';
 
     return (

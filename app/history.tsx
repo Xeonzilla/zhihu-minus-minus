@@ -6,7 +6,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { type Href, Stack, useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable } from 'react-native';
 import {
   batchDelReadHistory,
@@ -40,7 +40,7 @@ export default function HistoryScreen() {
       if (!lastPage || lastPage.paging?.is_end) return undefined;
       const nextUrl = lastPage.paging?.next;
       const match = nextUrl?.match(/offset=(\d+)/);
-      return match ? parseInt(match[1]) : undefined;
+      return match ? parseInt(match[1], 10) : undefined;
     },
   });
 
@@ -147,7 +147,7 @@ export default function HistoryScreen() {
     if (!rawData) return null;
 
     const extra = rawData.extra;
-    const type = extra?.content_type || 'answer';
+    const _type = extra?.content_type || 'answer';
 
     const key = makeItemKey(item);
     const isSelected = selectedIds.has(key);

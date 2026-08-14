@@ -5,7 +5,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -19,7 +19,7 @@ import {
   TextInput,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChatMessage, getMessages, sendMessage } from '@/api/zhihu';
+import { getMessages, sendMessage } from '@/api/zhihu';
 import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
@@ -62,12 +62,12 @@ export default function ChatScreen() {
 
   const sendMutation = useMutation({
     mutationFn: (text: string) => sendMessage(id, text),
-    onMutate: async (newText) => {
+    onMutate: async (_newText) => {
       // Optimistic update logic could go here
       setInputText('');
       Keyboard.dismiss();
     },
-    onSuccess: (newMessage) => {
+    onSuccess: (_newMessage) => {
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ['chat', id] });
     },

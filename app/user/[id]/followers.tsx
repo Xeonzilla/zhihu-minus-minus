@@ -1,7 +1,6 @@
 import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
 import { ActivityIndicator } from 'react-native';
 import { getMemberFollowers } from '@/api/zhihu';
 import { Text, useThemeColor, View } from '@/components/Themed';
@@ -9,7 +8,7 @@ import { UserCard } from '@/components/UserCard';
 
 export default function FollowersScreen() {
   const { id } = useLocalSearchParams();
-  const router = useRouter();
+  const _router = useRouter();
   const primaryColor = useThemeColor({}, 'primary');
 
   const {
@@ -29,7 +28,7 @@ export default function FollowersScreen() {
       if (!lastPage || lastPage.paging?.is_end) return undefined;
       const nextUrl = lastPage.paging?.next;
       const match = nextUrl?.match(/offset=(\d+)/);
-      return match ? parseInt(match[1]) : undefined;
+      return match ? parseInt(match[1], 10) : undefined;
     },
   });
 
