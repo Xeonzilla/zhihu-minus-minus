@@ -166,7 +166,7 @@ export const getFeed = async (url: string): Promise<ZhihuFeedResponse> => {
         (s: any) => s.section_name?.includes('同城') || s.section_id,
       );
 
-      if (localSection && localSection.section_id) {
+      if (localSection?.section_id) {
         finalUrl = `https://api.zhihu.com/feed-root/section/${localSection.section_id}?channelStyle=0`;
         if (localSection.section_name) {
           useSettingsStore

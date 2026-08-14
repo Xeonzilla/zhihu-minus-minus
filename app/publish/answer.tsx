@@ -47,7 +47,7 @@ export default function PublishAnswerScreen() {
 
   const renderQuestionItem = ({ item }: { item: any }) => {
     // Check if it's an invitation item
-    if (item.content && item.content.text) {
+    if (item.content?.text) {
       const {
         title: inviter,
         sub_title: inviteMsg,

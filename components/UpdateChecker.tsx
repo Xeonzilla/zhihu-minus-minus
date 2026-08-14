@@ -39,7 +39,7 @@ export const useCheckUpdate = (
         const response = await fetch(GITHUB_RELEASE_API);
         const data = await response.json();
 
-        if (data && data.tag_name) {
+        if (data?.tag_name) {
           const latestVersionTag = data.tag_name;
           const latestVersion = latestVersionTag.replace('v', '');
           const currentVersion = Constants.expoConfig?.version || '0.0.0';
