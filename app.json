@@ -43,9 +43,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.huamu013.ZhihuMinusMinus",
-      "permissions": [
-        "REQUEST_INSTALL_PACKAGES"
-      ],
+      "permissions": ["REQUEST_INSTALL_PACKAGES"],
       "intentFilters": [
         {
           "action": "VIEW",
@@ -131,10 +129,7 @@
               "pathPrefix": "/collection/"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         },
         {
           "action": "VIEW",
@@ -145,10 +140,7 @@
               "pathPrefix": "/p/"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         },
         {
           "action": "VIEW",
@@ -194,10 +186,7 @@
               "pathPrefix": "/pins/"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         },
         {
           "action": "VIEW",
@@ -206,10 +195,7 @@
               "scheme": "zhihu"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
     },
