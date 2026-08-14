@@ -10,8 +10,9 @@ import { LinkCard } from './ZhihuContent';
 function parseExcerpt(html: string): { text: string; links: string[] } {
   const links: string[] = [];
   const linkRegex = /<a[^>]*data-draft-type="link-card"[^>]*href="([^"]*)"/gi;
-  let m;
-  while ((m = linkRegex.exec(html)) !== null) {
+  while (true) {
+    const m = linkRegex.exec(html);
+    if (m === null) break;
     links.push(m[1]);
   }
   const text = html
