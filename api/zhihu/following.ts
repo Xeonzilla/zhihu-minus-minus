@@ -1,11 +1,4 @@
-import type {
-  ZhihuAuthor,
-  ZhihuBadge,
-  ZhihuBadgeV2,
-  ZhihuDetailBadge,
-  ZhihuMergedBadge,
-  ZhihuPaging,
-} from '@/types/zhihu';
+import type { ZhihuAuthor, ZhihuPaging } from '@/types/zhihu';
 import apiClient from '../client';
 
 export interface ZhihuFollowingColumnItem {

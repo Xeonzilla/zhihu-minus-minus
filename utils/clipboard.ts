@@ -14,7 +14,7 @@ export const consumeAppClipboardText = (text: string): boolean => {
  */
 export const copyToClipboard = async (
   text: string,
-  successMessage: string = '已复制到剪贴板',
+  _successMessage: string = '已复制到剪贴板',
 ) => {
   pendingAppClipboardText = null;
 

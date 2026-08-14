@@ -9,7 +9,7 @@ import { resolveLocalAccountKey } from '@/utils/localAccount';
 const AUTH_STORAGE_PATH = `${FileSystem.documentDirectory}auth-storage.json`;
 
 const fileStorage = {
-  getItem: async (name: string) => {
+  getItem: async (_name: string) => {
     try {
       const info = await FileSystem.getInfoAsync(AUTH_STORAGE_PATH);
       if (info.exists) {
@@ -21,14 +21,14 @@ const fileStorage = {
       return null;
     }
   },
-  setItem: async (name: string, value: string) => {
+  setItem: async (_name: string, value: string) => {
     try {
       await FileSystem.writeAsStringAsync(AUTH_STORAGE_PATH, value);
     } catch (e) {
       console.error('写入存储失败:', e);
     }
   },
-  removeItem: async (name: string) => {
+  removeItem: async (_name: string) => {
     try {
       await FileSystem.deleteAsync(AUTH_STORAGE_PATH, { idempotent: true });
     } catch (e) {

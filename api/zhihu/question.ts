@@ -1,4 +1,4 @@
-import type { ZhihuAuthor, ZhihuBadgeV2 } from '@/types/zhihu';
+import type { ZhihuAuthor } from '@/types/zhihu';
 import apiClient from '../client';
 
 export interface ZhihuQuestionBrief {

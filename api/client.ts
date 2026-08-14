@@ -49,7 +49,7 @@ apiClient.interceptors.request.use(async (config) => {
   }
 
   if (cookie) {
-    config.headers['Cookie'] = cookie;
+    config.headers.Cookie = cookie;
     const dc0 = getDc0(cookie);
     if (dc0) {
       config.headers['X-Udid'] = dc0.split('|')[0]; // 添加 X-Udid 头
@@ -68,7 +68,7 @@ apiClient.interceptors.request.use(async (config) => {
       config.headers['x-zse-96'] = zse96;
       config.headers['x-zse-93'] = ZSE_VERSION;
       config.headers['x-requested-with'] = 'fetch';
-      config.headers['Referer'] = 'https://www.zhihu.com/';
+      config.headers.Referer = 'https://www.zhihu.com/';
       config.headers['User-Agent'] =
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36';
     }

@@ -150,5 +150,5 @@ export const getSignaturePurity = async (
   }
 
   // 5. 自定义混淆编码
-  return '2.0_' + customEncode(cipher);
+  return `2.0_${customEncode(cipher)}`;
 };

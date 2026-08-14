@@ -1,3 +1,8 @@
+export type {
+  ZhihuAuthor,
+  ZhihuBadgeV2,
+  ZhihuPaging,
+} from '@/types/zhihu';
 export * from './answer';
 export * from './article';
 export * from './chat';
@@ -17,9 +22,3 @@ export * from './question';
 export * from './search';
 export * from './topic';
 export * from './voters';
-
-export type {
-  ZhihuAuthor,
-  ZhihuBadgeV2,
-  ZhihuPaging,
-} from '@/types/zhihu';

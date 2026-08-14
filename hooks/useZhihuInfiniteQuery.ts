@@ -1,9 +1,6 @@
-import {
-  UseInfiniteQueryOptions,
-  useInfiniteQuery,
-} from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
-export function useZhihuInfiniteQuery<TData = any>(options: any) {
+export function useZhihuInfiniteQuery<_TData = any>(options: any) {
   return useInfiniteQuery({
     ...options,
     getNextPageParam: (lastPage: any) => {

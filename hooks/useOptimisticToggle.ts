@@ -42,7 +42,7 @@ export function useOptimisticToggle<TData = any>({
 
       return { previous };
     },
-    onError: (err, variables, context) => {
+    onError: (_err, _variables, context) => {
       if (context?.previous && queryKey) {
         queryClient.setQueryData(queryKey, context.previous);
       }

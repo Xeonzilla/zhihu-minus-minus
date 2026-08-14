@@ -1,4 +1,3 @@
-import * as Crypto from 'expo-crypto';
 import { getSignaturePurity } from './zse_purity';
 
 export const ZSE_VERSION = '101_3_3.0';
