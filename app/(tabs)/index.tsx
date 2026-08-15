@@ -147,6 +147,11 @@ export default function HomeScreen() {
     () => new Set([initialPageIndex]),
   );
 
+  // 记录离开首页区域前停留的分区，供从「发布」「我的」返回时定位
+  const lastHomePageRef = useRef(
+    initialPageIndex < homeTabsCount ? initialPageIndex : 0,
+  );
+
   useEffect(() => {
     setVisitedPages((prev) => {
       if (prev.has(currentPage)) return prev;
@@ -155,6 +160,12 @@ export default function HomeScreen() {
       return next;
     });
   }, [currentPage]);
+
+  useEffect(() => {
+    if (currentPage < homeTabsCount) {
+      lastHomePageRef.current = currentPage;
+    }
+  }, [currentPage, homeTabsCount]);
 
   // 监听 params.tab 变化并切换页面
   useEffect(() => {
@@ -222,8 +233,13 @@ export default function HomeScreen() {
         listRefs.current[currentPage]?.refresh?.();
       }
     } else {
-      // 如果不在首页 Tab（如发布或我的页面），则切换到第一页
-      pagerRef.current?.setPage(0);
+      // 如果不在首页 Tab（如发布或我的页面），则回到离开前停留的分区
+      // clamp 兜底：Tab 配置变化后，记录的索引可能已越界
+      const targetPage = Math.min(
+        Math.max(lastHomePageRef.current, 0),
+        Math.max(homeTabsCount - 1, 0),
+      );
+      pagerRef.current?.setPage(targetPage);
     }
   };
 
