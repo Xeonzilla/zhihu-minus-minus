@@ -41,6 +41,7 @@ export default function MathView({
         }
       `}</style>
       <span
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: KaTeX 的渲染结果只能这样注入。formula 虽来自知乎正文,但 renderToString 的 trust 选项默认为 false,\href/\url/\includegraphics 等可注入 URL 或 HTML 的命令会被拒绝渲染,输出不含可执行内容。
         dangerouslySetInnerHTML={{ __html: html }}
         style={{
           fontSize: '17px',
