@@ -1,4 +1,8 @@
-import type { QueryClient } from '@tanstack/react-query';
+import type {
+  InfiniteData,
+  QueryClient,
+  QueryKey,
+} from '@tanstack/react-query';
 
 /**
  * Custom refresh handler for TanStack useInfiniteQuery.
@@ -12,15 +16,19 @@ import type { QueryClient } from '@tanstack/react-query';
  */
 export async function refreshInfiniteQuery(
   queryClient: QueryClient,
-  queryKey: any[],
-  refetch: () => Promise<any>,
+  queryKey: QueryKey,
+  refetch: () => Promise<unknown>,
 ) {
-  queryClient.setQueryData(queryKey, (oldData: any) => {
-    if (!oldData) return oldData;
-    return {
-      pages: oldData.pages.slice(0, 1),
-      pageParams: oldData.pageParams.slice(0, 1),
-    };
-  });
+  // 只裁剪页数组本身,不触碰页内容,因此元素类型用 unknown 即可。
+  queryClient.setQueryData<InfiniteData<unknown, unknown>>(
+    queryKey,
+    (oldData) => {
+      if (!oldData) return oldData;
+      return {
+        pages: oldData.pages.slice(0, 1),
+        pageParams: oldData.pageParams.slice(0, 1),
+      };
+    },
+  );
   return refetch();
 }

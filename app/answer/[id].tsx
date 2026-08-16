@@ -84,6 +84,7 @@ export default function AnswerDetailScreen() {
       );
       return res.data;
     },
+    initialPageParam: 0,
     enabled: !!questionId,
   });
 
