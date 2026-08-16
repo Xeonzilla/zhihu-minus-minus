@@ -1,7 +1,7 @@
 import { openDatabaseAsync, type SQLiteDatabase } from 'expo-sqlite';
 
 const DATABASE_NAME = 'local-data.db';
-const DATABASE_VERSION = 2;
+const DATABASE_VERSION = 3;
 
 interface UserVersionRow {
   user_version: number;
@@ -55,6 +55,15 @@ const MIGRATIONS: DatabaseMigration[] = [
         updated_at INTEGER NOT NULL,
         PRIMARY KEY (account_key, feed_type)
       );
+    `,
+  },
+  {
+    version: 3,
+    sql: `
+      -- The launch cache only ever reads back the recommendation feed, but
+      -- earlier builds wrote a row for every feed tab. Those rows are dead
+      -- weight; drop them once.
+      DELETE FROM feed_cache WHERE feed_type <> 'recommend';
     `,
   },
 ];
