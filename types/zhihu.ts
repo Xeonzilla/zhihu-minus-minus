@@ -11,7 +11,7 @@ export interface ZhihuDetailBadge {
   url?: string;
   icon?: string;
   night_icon?: string;
-  sources?: any[];
+  sources?: unknown[];
 }
 
 export interface ZhihuMergedBadge {
@@ -22,15 +22,15 @@ export interface ZhihuMergedBadge {
   url?: string;
   icon?: string;
   night_icon?: string;
-  sources?: any[];
+  sources?: unknown[];
 }
 
 export interface ZhihuBadgeV2 {
   title: string;
   icon: string;
   night_icon: string;
-  detail_badges?: ZhihuDetailBadge[] | any[];
-  merged_badges?: ZhihuMergedBadge[] | any[];
+  detail_badges?: ZhihuDetailBadge[];
+  merged_badges?: ZhihuMergedBadge[];
 }
 
 export interface ZhihuAuthor {
@@ -48,7 +48,7 @@ export interface ZhihuAuthor {
   is_advertiser?: boolean;
   is_privacy?: boolean;
   is_following?: boolean;
-  badge?: ZhihuBadge[] | any[];
+  badge?: ZhihuBadge[];
   badge_v2?: ZhihuBadgeV2;
 }
 
