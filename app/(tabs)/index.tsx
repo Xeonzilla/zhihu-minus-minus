@@ -45,7 +45,10 @@ import { RecentMoments } from '@/components/RecentMoments';
 import { Text, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import { feedCacheRepository } from '@/storage/feedCacheRepository';
+import {
+  type FeedCacheContext,
+  feedCacheRepository,
+} from '@/storage/feedCacheRepository';
 import {
   type FeedExposureContext,
   feedExposureRepository,
@@ -716,6 +719,13 @@ const FeedList = React.forwardRef<
       if (!localAccountKey) return null;
       return { accountKey: localAccountKey, feedType: tab };
     }, [localAccountKey, tab]);
+    // 启动缓存只服务推荐流（与设置项「启动时保留推荐流」一致）。
+    // 读写两端都由这一个值派生，任一端都不可能再漏判 tab。
+    const launchCacheContext = useMemo<FeedCacheContext | null>(() => {
+      if (!enableFeedCacheOnLaunch || tab !== 'recommend') return null;
+      if (!localAccountKey) return null;
+      return { accountKey: localAccountKey, feedType: tab };
+    }, [enableFeedCacheOnLaunch, localAccountKey, tab]);
     const [recentExposureKeys, setRecentExposureKeys] =
       useState<Set<string> | null>(() =>
         localDedupEnabled ? null : new Set(),
@@ -728,14 +738,14 @@ const FeedList = React.forwardRef<
     const [isCacheCheckDone, setIsCacheCheckDone] = useState(false);
 
     useEffect(() => {
-      let cancelled = false;
-      if (!enableFeedCacheOnLaunch || tab !== 'recommend' || !exposureContext) {
+      if (!launchCacheContext) {
         setIsCacheCheckDone(true);
         return;
       }
 
+      let cancelled = false;
       void feedCacheRepository
-        .getFeedCache<FeedListItem>(exposureContext)
+        .getFeedCache<FeedListItem>(launchCacheContext)
         .then((cached) => {
           if (cancelled) return;
           if (cached && cached.items.length > 0) {
@@ -755,7 +765,7 @@ const FeedList = React.forwardRef<
       return () => {
         cancelled = true;
       };
-    }, [enableFeedCacheOnLaunch, exposureContext, tab]);
+    }, [launchCacheContext, tab]);
 
     useEffect(() => {
       let cancelled = false;
@@ -855,13 +865,12 @@ const FeedList = React.forwardRef<
             data.paging?.next?.replace('http://', 'https://') ?? null;
 
           if (
-            enableFeedCacheOnLaunch &&
-            exposureContext &&
+            launchCacheContext &&
             pageParam === (FEED_URLS as any)[tab] &&
             items.length > 0
           ) {
             void feedCacheRepository
-              .saveFeedCache(exposureContext, items, nextUrl)
+              .saveFeedCache(launchCacheContext, items, nextUrl)
               .catch((err) => console.warn('保存启动 Feed 缓存失败', err));
           }
 
@@ -876,12 +885,11 @@ const FeedList = React.forwardRef<
       initialPageParam: (FEED_URLS as any)[tab],
       getNextPageParam: (lastPage) => lastPage.nextUrl,
       initialData: initialFeedCache ?? undefined,
-      staleTime:
-        enableFeedCacheOnLaunch && initialFeedCache ? 5 * 60 * 1000 : 0,
+      staleTime: launchCacheContext && initialFeedCache ? 5 * 60 * 1000 : 0,
       enabled:
         (!!cookies || guestCookieReady) &&
         (!localDedupEnabled || recentExposureKeys !== null) &&
-        (!enableFeedCacheOnLaunch || tab !== 'recommend' || isCacheCheckDone),
+        (!launchCacheContext || isCacheCheckDone),
     });
 
     const handleRefresh = useCallback(async () => {
