@@ -238,7 +238,7 @@ export default function TopicDetail() {
             {activeTab === 'structure' && (
               <TopicStructureView
                 parents={parentsData?.data || []}
-                children={childrenData?.data || []}
+                childTopics={childrenData?.data || []}
                 bestAnswerers={bestAnswerersData?.data || []}
                 isLoading={
                   parentsLoading || childrenLoading || bestAnswerersLoading
@@ -291,12 +291,12 @@ export default function TopicDetail() {
 
 function TopicStructureView({
   parents,
-  children,
+  childTopics,
   bestAnswerers,
   isLoading,
 }: {
   parents: any[];
-  children: any[];
+  childTopics: any[];
   bestAnswerers: any[];
   isLoading: boolean;
 }) {
@@ -370,11 +370,11 @@ function TopicStructureView({
         </View>
       )}
 
-      {children.length > 0 && (
+      {childTopics.length > 0 && (
         <View className="px-5 py-4 bg-transparent">
           <Text className="text-base font-bold mb-3">子话题</Text>
           <View className="flex-row flex-wrap bg-transparent">
-            {children.map((topic: any) => (
+            {childTopics.map((topic: any) => (
               <TopicItem key={topic.id} topic={topic} />
             ))}
           </View>
@@ -382,7 +382,7 @@ function TopicStructureView({
       )}
 
       {parents.length === 0 &&
-        children.length === 0 &&
+        childTopics.length === 0 &&
         bestAnswerers.length === 0 && (
           <View className="p-10 items-center bg-transparent">
             <Text type="secondary">暂无话题层级数据</Text>
