@@ -683,7 +683,10 @@ function Section({
         {childArray.map((child, index) => {
           const isLast = index === childArray.length - 1;
           return (
-            <RNView key={index}>
+            <RNView
+              // biome-ignore lint/suspicious/noArrayIndexKey: childArray 来自 React.Children,子元素在调用处的 JSX 里逐个写死,数量与顺序在编译期就固定了。
+              key={index}
+            >
               {child}
               {!isLast && (
                 <RNView
@@ -886,7 +889,11 @@ function HslSlider({
         }}
       >
         {gradientColors.map((color: string, i: number) => (
-          <RNView key={i} style={{ flex: 1, backgroundColor: color }} />
+          <RNView
+            // biome-ignore lint/suspicious/noArrayIndexKey: gradientColors 是固定长度的预设色序,渲染的是无状态色块;色值本身会重复,不能当 key。
+            key={i}
+            style={{ flex: 1, backgroundColor: color }}
+          />
         ))}
       </RNView>
       {trackWidth > 0 && (
