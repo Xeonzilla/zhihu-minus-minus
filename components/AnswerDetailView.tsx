@@ -12,7 +12,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  useWindowDimensions,
 } from 'react-native';
 import { SharedTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -32,7 +31,6 @@ import { Text, ThemedIcon, useThemeColor, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import { ZhihuContent } from '@/components/ZhihuContent';
 import Colors from '@/constants/Colors';
-import { useCollectionAction } from '@/hooks/useCollectionAction';
 import { useOptimisticToggle } from '@/hooks/useOptimisticToggle';
 import { useScrollHeaderAnim } from '@/hooks/useScrollAnimation';
 import { useCollectionStore } from '@/store/useCollectionStore';
@@ -59,7 +57,6 @@ export const AnswerDetailView = ({
 }: AnswerDetailViewProps) => {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
 
   const colorScheme = useColorScheme();
   const surfaceColor = Colors[colorScheme].surface;
@@ -160,8 +157,6 @@ export const AnswerDetailView = ({
   const favoritedCollection = collectionStatus?.data?.find(
     (item: any) => item.is_favorited,
   );
-
-  const { toggleCollect } = useCollectionAction();
 
   const storeCollected = useCollectionStore(
     (state) => state.collectedStatusMap[id.toString()],

@@ -419,7 +419,6 @@ const LazyImage: React.FC<{
 const IMG_Renderer: CustomBlockRenderer = ({ tnode }) => {
   const { src, width: attrWidth, height: attrHeight, eeimg } = tnode.attributes;
   const rendererProps = useRendererProps('img');
-  const { useWebView } = useSettingsStore();
   const [svgError, setSvgError] = useState(false);
 
   if (!rendererProps) return null;
