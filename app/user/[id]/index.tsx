@@ -486,6 +486,7 @@ export default function UserDetailScreen() {
         {parts.map((part, i) =>
           part.startsWith('[[EM]]') && part.endsWith('[[/EM]]') ? (
             <Text
+              // biome-ignore lint/suspicious/noArrayIndexKey: parts 是同一段文本按 [[EM]] 标记 split 出的片段,数量与顺序由该次渲染的文本唯一决定,不增删也不重排。
               key={i}
               type="primary"
               className="font-bold"

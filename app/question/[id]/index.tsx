@@ -59,7 +59,6 @@ import { useScrollHeaderAnim } from '@/hooks/useScrollAnimation';
 import { useViewableItems } from '@/hooks/useViewableItems';
 import { useZhihuInfiniteQuery } from '@/hooks/useZhihuInfiniteQuery';
 import { useCollectionStore } from '@/store/useCollectionStore';
-import { useProgressStore } from '@/store/useProgressStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { formatDate } from '@/utils/date';
 import { refreshInfiniteQuery } from '@/utils/query';
@@ -662,7 +661,6 @@ export default function QuestionDetail() {
     }, 500);
   };
 
-  const { saveProgress, getProgress } = useProgressStore();
   const [isRestored, setIsRestored] = useState(false);
 
   const [sortBy, setSortBy] = useState<'default' | 'created'>('default');

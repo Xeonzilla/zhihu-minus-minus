@@ -4,6 +4,7 @@ import { ActivityIndicator, Image, Pressable } from 'react-native';
 import { followMember, unfollowMember } from '@/api/zhihu';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import type { ZhihuBadge } from '@/types/zhihu';
 import { Text, useThemeColor, View } from './Themed';
 export const UserCard = ({ user }: { user: any }) => {
   const router = useRouter();
@@ -56,7 +57,7 @@ export const UserCard = ({ user }: { user: any }) => {
           <Text className="text-base font-semibold" numberOfLines={1}>
             {user.name}
           </Text>
-          {user.badge?.find((b: any) => b.type === 'best_answerer') && (
+          {user.badge?.find((b: ZhihuBadge) => b.type === 'best_answerer') && (
             <View className="ml-1.5 px-1 py-px rounded bg-[#fffbe6] border-[0.5px] border-[#ffe58f]">
               <Text className="text-[10px] font-bold text-[#d48806]">
                 优秀回答者

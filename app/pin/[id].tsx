@@ -9,7 +9,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { addReadHistory } from '@/api/zhihu/history';
@@ -31,7 +30,6 @@ export default function PinDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
   const _queryClient = useQueryClient();
   const textColor = Colors[colorScheme].text;
   const borderColor = Colors[colorScheme].border;

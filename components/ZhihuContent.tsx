@@ -325,6 +325,7 @@ const P_Renderer: CustomBlockRenderer = ({ TDefaultRenderer, ...props }) => {
         if (slice.interaction) {
           return (
             <Text
+              // biome-ignore lint/suspicious/noArrayIndexKey: slices 是单个 segment 一次性切分出的结果,同一 segment 的切分稳定;slice.text 会重复,不能当 key。
               key={idx}
               onPress={() => onPress(pid, segment, slice.interaction)}
               style={{
@@ -342,6 +343,7 @@ const P_Renderer: CustomBlockRenderer = ({ TDefaultRenderer, ...props }) => {
         }
         return (
           <Text
+            // biome-ignore lint/suspicious/noArrayIndexKey: 同上,与相邻分支共用一次 slices.map。
             key={idx}
             style={{
               color: textColor,
@@ -419,7 +421,6 @@ const LazyImage: React.FC<{
 const IMG_Renderer: CustomBlockRenderer = ({ tnode }) => {
   const { src, width: attrWidth, height: attrHeight, eeimg } = tnode.attributes;
   const rendererProps = useRendererProps('img');
-  const { useWebView } = useSettingsStore();
   const [svgError, setSvgError] = useState(false);
 
   if (!rendererProps) return null;
@@ -952,6 +953,7 @@ export const ZhihuContent: React.FC<ZhihuContentProps> = React.memo(
         if (item.type === 'text') {
           return (
             <RenderHtml
+              // biome-ignore lint/suspicious/noArrayIndexKey: contentArray 是想法正文的解析结果,按原文顺序混排文本/图片/链接卡片。PinContentItem 没有 id,内容本身也不保证唯一,index 是这里唯一稳定的标识。
               key={index}
               contentWidth={width - 40}
               source={{ html: `<div>${item.content}</div>` }}
@@ -969,6 +971,7 @@ export const ZhihuContent: React.FC<ZhihuContentProps> = React.memo(
         if (item.type === 'image') {
           return (
             <View
+              // biome-ignore lint/suspicious/noArrayIndexKey: 同上,与相邻分支共用一次 contentArray.map。
               key={index}
               className="my-2.5 items-center w-full bg-transparent"
             >
@@ -991,6 +994,7 @@ export const ZhihuContent: React.FC<ZhihuContentProps> = React.memo(
         if (item.type === 'link_card') {
           return (
             <LinkCard
+              // biome-ignore lint/suspicious/noArrayIndexKey: 同上,与相邻分支共用一次 contentArray.map。
               key={index}
               url={item.url}
               title={item.data_draft_title}

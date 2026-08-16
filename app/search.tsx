@@ -99,7 +99,12 @@ export default function SearchScreen() {
         {parts.map((part, i) => {
           if (part.startsWith('[[EM]]') && part.endsWith('[[/EM]]')) {
             return (
-              <Text key={i} type="primary" className="font-bold">
+              <Text
+                // biome-ignore lint/suspicious/noArrayIndexKey: parts 是同一段文本按 [[EM]] 标记 split 出的片段,数量与顺序由该次渲染的文本唯一决定,不增删也不重排。
+                key={i}
+                type="primary"
+                className="font-bold"
+              >
                 {part.replace(/\[\[\/?EM\]\]/g, '')}
               </Text>
             );
@@ -184,7 +189,11 @@ export default function SearchScreen() {
         <Text className="text-base">
           {parts.map((p: string, i: number) =>
             p.toLowerCase() === query.toLowerCase() ? (
-              <Text key={i} style={{ color: tintColor, fontWeight: 'bold' }}>
+              <Text
+                // biome-ignore lint/suspicious/noArrayIndexKey: parts 是搜索词按 query split 出的片段,数量与顺序由该次渲染的建议文本唯一决定。
+                key={i}
+                style={{ color: tintColor, fontWeight: 'bold' }}
+              >
                 {p}
               </Text>
             ) : (
@@ -370,9 +379,9 @@ export default function SearchScreen() {
                 </Pressable>
               </View>
               <View className="flex-row flex-wrap">
-                {history.map((item, index) => (
+                {history.map((item) => (
                   <View
-                    key={index}
+                    key={item}
                     className="flex-row items-center rounded-[15px] pl-3 pr-2 py-1.5 mr-2.5 mb-2.5"
                     style={{ backgroundColor: surfaceColor }}
                   >

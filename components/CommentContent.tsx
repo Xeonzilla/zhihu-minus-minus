@@ -67,7 +67,11 @@ export const CommentContent: React.FC<CommentContentProps> = ({
 
       {/* 渲染提取出的图片卡片（独占整行） */}
       {imageUrls.map((url, idx) => (
-        <View key={`${url}-${idx}`} className="bg-transparent my-1.5 w-full">
+        <View
+          // biome-ignore lint/suspicious/noArrayIndexKey: 同一条评论可以重复引用同一张图,url 不唯一,复合 key 才能保证不撞。
+          key={`${url}-${idx}`}
+          className="bg-transparent my-1.5 w-full"
+        >
           <BouncyButton
             onPress={() => handleOpenImage(url)}
             className="flex-row items-center p-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/20"

@@ -119,6 +119,7 @@ export const FeedExcerpt: React.FC<{
       ) : null}
       {parsed.links.map((link, i) => (
         <LinkCard
+          // biome-ignore lint/suspicious/noArrayIndexKey: link 不能当 key —— 缺 url 的 link_card 会回落成空串(见上方 parsePinContent 的 map),多张卡片就会撞;正则提取的那条路径也不去重。
           key={i}
           url={link}
           onPress={handleLinkPress}
